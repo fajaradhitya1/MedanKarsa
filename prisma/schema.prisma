@@ -1,0 +1,405 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==========================================
+// USER & PROFILE
+// ==========================================
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  username      String?   @unique
+  password      String?   // <-- Tambahkan baris ini
+  image         String?
+  emailVerified DateTime?
+
+  role       UserRole @default(USER)
+  karsaPoint Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  profile       Profile?
+  reports       Report[]
+  aiScans       AiScan[]
+  rewards       RewardClaim[]
+  notifications Notification[]
+  locations     Location[]
+  karsaPoints   KarsaPoint[]
+
+  submittedEvents Event[] @relation("SubmittedEvents")
+
+  umkms         Umkm[]
+
+  accounts Account[]
+  sessions Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Profile {
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  bio       String?
+  phone     String?
+  address   String?
+  birthDate DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+
+// ==========================================
+// HERITAGE / BUDAYA
+// ==========================================
+model Heritage {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  category    String
+  description String
+  history     String?
+  address     String?
+  latitude    Float?
+  longitude   Float?
+  coverImage  String?
+  images         String[]
+  
+  // Kolom untuk menyimpan data 360 & hotspot tiap heritage
+  panoramaScenes Json?  
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+// ==========================================
+// EVENT
+// ==========================================
+
+enum EventStatus {
+  PENDING
+  PUBLISHED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+model Event {
+  id String @id @default(cuid())
+
+  // INFORMASI EVENT
+  title String
+  slug  String @unique
+
+  // DESKRIPSI
+  description       String
+  detailDescription String
+
+  // KATEGORI
+  category String
+
+  // LOKASI
+  location  String
+  latitude  Float
+  longitude Float
+
+  // WAKTU
+  startAt DateTime
+  endAt   DateTime
+
+  // GAMBAR
+  coverImage String?
+
+  // Field Baru
+  price             Int      @default(0) // Harga event
+  paymentQrCode     String?  // URL atau Base64 untuk QR Barcode
+
+  // STATUS
+  status EventStatus @default(PENDING)
+
+  // USER YANG MENGAJUKAN
+  submittedById String?
+  submittedBy User? @relation("SubmittedEvents", fields: [submittedById], references: [id], onDelete: SetNull)
+
+  // TAMBAHKAN BARIS INI (Relasi balik ke Ticket)
+  tickets Ticket[]
+  danaNumber String?
+
+  // TIMESTAMP
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([startAt])
+  @@index([endAt])
+  @@index([category])
+  @@index([submittedById])
+}
+
+model Ticket {
+  id           String   @id @default(cuid())
+  ticketCode   String   @unique
+  buyerName    String
+  buyerEmail   String
+  buyerPhone   String
+  createdAt    DateTime @default(now())
+  status       String   @default("PENDING") // PENDING, SUCCESS, FAILED
+  paymentType  String?  // qris, gopay, bank_transfer, dll
+
+  // Relasi ke Event
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId      String
+}
+
+// ==========================================
+// LAPORAN MASYARAKAT
+// ==========================================
+
+model Report {
+  id          String         @id @default(cuid())
+  userId      String
+  title       String
+  description String
+  category    ReportCategory
+  image       String?
+  address     String?
+  latitude    Float?
+  longitude   Float?
+  status      ReportStatus   @default(PENDING)
+  adminNote   String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ==========================================
+// AI SCAN
+// ==========================================
+
+model AiScan {
+  id          String   @id @default(cuid())
+  userId      String
+  image       String
+  result      String
+  confidence  Float?
+  category    String?
+  description String?
+  points      Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ==========================================
+// KARSA POINT
+// ==========================================
+
+model KarsaPoint {
+  id          String    @id @default(cuid())
+  userId      String
+  amount      Int
+  type        PointType
+  description String?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ==========================================
+// REWARD
+// ==========================================
+
+model Reward {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  image       String?
+  points      Int
+  stock       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  claims RewardClaim[]
+}
+
+model RewardClaim {
+  id        String      @id @default(cuid())
+  userId    String
+  rewardId  String
+  points    Int
+  status    ClaimStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reward Reward @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([rewardId])
+}
+
+// ==========================================
+// NOTIFICATION
+// ==========================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   // ID user yang menerima notifikasi
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ==========================================
+// LOCATION
+// ==========================================
+
+model Location {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  address   String?
+  latitude  Float
+  longitude Float
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+
+model Umkm {
+  id          String   @id @default(cuid())
+  name        String
+  category    String   // Contoh: Kuliner, Kerajinan, Fashion, dll.
+  description String
+  address     String
+  latitude    Float    // Koordinat lintang untuk peta
+  longitude   Float    // Koordinat bujur untuk peta
+  image       String?
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum HeritageCategory {
+  SEJARAH
+  BUDAYA
+  KULINER
+  SENI
+  ARSITEKTUR
+}
+
+enum UmkmCategory {
+  KULINER
+  KERAJINAN
+  FASHION
+  JASA
+  OLEH_OLEH
+  LAINNYA
+}
+
+enum UmkmStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+}
+
+enum ReportCategory {
+  LAMPU_JALAN
+  GENANGAN
+  SAMPAH
+  FASILITAS_RUSAK
+  JALAN_RUSAK
+  LAINNYA
+}
+
+enum ReportStatus {
+  PENDING
+  PROCESSING
+  RESOLVED
+  REJECTED
+}
+
+enum PointType {
+  EARN
+  SPEND
+  BONUS
+  ADJUSTMENT
+}
+
+enum ClaimStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  SYSTEM
+  REPORT
+  EVENT
+  REWARD
+  POINT
+  AI_SCAN
+}
