@@ -135,20 +135,21 @@ function TicketContent() {
             </div>
 
             {/* Tombol Aksi (Simpan / Kirim Ulang) */}
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <button
-                onClick={() => window.print()}
-                className="flex items-center justify-center gap-2 rounded-xl border border-[#173d2b] py-3 text-xs font-bold text-[#173d2b] hover:bg-[#173d2b] hover:text-white transition"
-              >
-                <Download size={15} /> Cetak / Unduh PDF
-              </button>
-              <button
-                onClick={() => alert("Tiket berhasil dikirim ulang ke WhatsApp & Email Anda!")}
-                className="flex items-center justify-center gap-2 rounded-xl bg-[#b8860b] py-3 text-xs font-bold text-white hover:bg-[#996f08] transition"
-              >
-                <Send size={15} /> Kirim ke WhatsApp
-              </button>
-            </div>
+            {/* Tombol Aksi (Simpan / Kirim Ulang) - Sembunyikan saat di-print */}
+<div className="grid grid-cols-2 gap-3 pt-2 print:hidden">
+  <button
+    onClick={() => window.print()}
+    className="flex items-center justify-center gap-2 rounded-xl border border-[#173d2b] py-3 text-xs font-bold text-[#173d2b] hover:bg-[#173d2b] hover:text-white transition"
+  >
+    <Download size={15} /> Cetak / Unduh PDF
+  </button>
+  <button
+    onClick={() => alert("Tiket berhasil dikirim ulang ke WhatsApp & Email Anda!")}
+    className="flex items-center justify-center gap-2 rounded-xl bg-[#b8860b] py-3 text-xs font-bold text-white hover:bg-[#996f08] transition"
+  >
+    <Send size={15} /> Kirim ke WhatsApp
+  </button>
+</div>
 
           </div>
         </div>
