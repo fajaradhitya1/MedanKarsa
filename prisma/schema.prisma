@@ -30,6 +30,7 @@ model User {
   notifications Notification[]
   locations     Location[]
   karsaPoints   KarsaPoint[]
+  pointTransactions PointTransaction[]
 
   submittedEvents Event[] @relation("SubmittedEvents")
 
@@ -233,6 +234,8 @@ model AiScan {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+
+
 // ==========================================
 // KARSA POINT
 // ==========================================
@@ -248,6 +251,16 @@ model KarsaPoint {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model PointTransaction {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  amount      Int      // Positif untuk perolehan, negatif untuk penukaran
+  description String   // Contoh: "Poin dari pembelian tiket Rumah Tjong A Fie"
+  type        String   // "EARN" atau "REDEEM"
+  createdAt   DateTime @default(now())
 }
 
 // ==========================================
