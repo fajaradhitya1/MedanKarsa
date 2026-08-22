@@ -19,7 +19,6 @@ const userNavItems = [
   { label: "Heritage", href: "/heritage", icon: Map },
   { label: "Event", href: "/event", icon: Map },
   { label: "UMKM", href: "/umkm", icon: Map },
-  { label: "Peta", href: "/map", icon: Map },
 ];
 
 const adminNavItems = [
