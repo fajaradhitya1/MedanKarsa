@@ -29,62 +29,65 @@ export default async function HeritageDetailPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-[#f8f3e8] text-[#173d2b] pb-16">
-      <div className="mx-auto max-w-6xl px-5 py-6 lg:px-8">
+      
+      {/* 1. HERO BANNER FULL LEBAR (Kiri ke Kanan) */}
+      <div className="relative w-full bg-[#173d2b] text-white overflow-hidden shadow-lg">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={mainImage} 
+            alt={heritage.name} 
+            className="h-full w-full object-cover opacity-45"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#173d2b] via-[#173d2b]/60 to-transparent" />
+        </div>
+
+        {/* Konten di dalam Hero Banner */}
+        <div className="relative z-10 max-w-6xl mx-auto px-5 lg:px-8 py-10">
+          {/* Navigasi Breadcrumb */}
+          <div className="flex items-center gap-2 text-xs font-semibold text-gray-200 mb-8">
+            <Link href="/" className="hover:text-white">🏠 Beranda</Link>
+            <span>/</span>
+            <Link href="/heritage" className="hover:text-white">Heritage</Link>
+            <span>/</span>
+            <span className="text-[#f1c76e]">{heritage.name}</span>
+          </div>
+
+          <div className="flex items-center gap-2 mb-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#173d2b] border border-[#e2b45e]/60 px-4 py-1.5 text-xs font-bold text-[#f1c76e] shadow-sm">
+              <Sparkles size={13} /> {heritage.category || "SEJARAH"}
+            </span>
+          </div>
+
+          <div className="max-w-3xl space-y-4 pt-4 pb-6">
+            <h1 className="font-serif text-4xl sm:text-6xl font-bold tracking-tight text-white drop-shadow-md">
+              {heritage.name}
+            </h1>
+            <p className="text-sm sm:text-base text-gray-200 line-clamp-2 leading-relaxed">
+              {heritage.description}
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3 pt-3">
+              <Link
+                href={`/heritage/${heritage.slug}/tour`}
+                className="inline-flex items-center gap-2 rounded-2xl bg-[#173d2b] border border-[#f1c76e]/60 px-6 py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-[#0f291d]"
+              >
+                <Compass size={18} className="text-[#f1c76e]" /> Tur 360°
+              </Link>
+
+              <Link
+                href={`/heritage/${heritage.slug}/book`}
+                className="inline-flex items-center gap-2 rounded-2xl bg-[#b8860b] px-6 py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-[#996f08]"
+              >
+                <Ticket size={18} /> Beli Tiket Masuk
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. KONTEN UTAMA DENGAN WRAPPER MAX-W-6XL */}
+      <div className="mx-auto max-w-6xl px-5 lg:px-8 mt-10">
         
-        {/* Navigasi Breadcrumb / Kembali */}
-        <div className="flex items-center gap-2 text-xs font-semibold text-[#667068] mb-5">
-          <Link href="/" className="hover:text-[#173d2b]">🏠 Beranda</Link>
-          <span>/</span>
-          <Link href="/heritage" className="hover:text-[#173d2b]">Heritage</Link>
-          <span>/</span>
-          <span className="text-[#173d2b]">{heritage.name}</span>
-        </div>
-
-        {/* HERO BANNER UTAMA */}
-        <div className="relative mb-10 overflow-hidden rounded-[32px] bg-[#173d2b] text-white shadow-xl">
-          <div className="absolute inset-0 z-0">
-            <img 
-              src={mainImage} 
-              alt={heritage.name} 
-              className="h-full w-full object-cover opacity-40"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#173d2b] via-[#173d2b]/50 to-transparent" />
-          </div>
-
-          <div className="relative z-10 p-6 sm:p-12 flex flex-col justify-between min-h-[480px]">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#173d2b] border border-[#e2b45e]/60 px-4 py-1.5 text-xs font-bold text-[#f1c76e] shadow-sm">
-                <Sparkles size={13} /> {heritage.category || "SEJARAH"}
-              </span>
-            </div>
-
-            <div className="mt-24 space-y-4">
-              <h1 className="font-serif text-4xl sm:text-6xl font-bold tracking-tight text-white drop-shadow-md">
-                {heritage.name}
-              </h1>
-              <p className="max-w-2xl text-sm sm:text-base text-gray-200 line-clamp-2 leading-relaxed">
-                {heritage.description}
-              </p>
-
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Link
-                  href={`/heritage/${heritage.slug}/tour`}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-[#173d2b] border border-[#f1c76e]/60 px-6 py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-[#0f291d]"
-                >
-                  <Compass size={18} className="text-[#f1c76e]" /> Tur 360°
-                </Link>
-
-                <Link
-                  href={`/heritage/${heritage.slug}/book`}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-[#b8860b] px-6 py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-[#996f08]"
-                >
-                  <Ticket size={18} /> Beli Tiket Masuk
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* PRATINJAU PANORAMA / CAROUSEL */}
         <section className="mb-12">
           {panoramaScenes.length > 0 ? (
@@ -104,7 +107,7 @@ export default async function HeritageDetailPage({ params }: Props) {
           )}
         </section>
 
-        {/* KONTEN UTAMA & SIDEBAR PRAKTIS */}
+        {/* GRID KONTEN & SIDEBAR */}
         <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
           
           <article className="space-y-8">
