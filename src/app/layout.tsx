@@ -22,7 +22,9 @@ export default function RootLayout({
       <body className="bg-[#f8f3e8] text-[#173d2b] antialiased">
         {/* 2. Bungkus Navbar dan children dengan SessionProvider */}
         <SessionProvider>
-          <Navbar />
+          <div className="print:hidden">
+    <Navbar />
+  </div>
           {children}
         </SessionProvider>
       </body>

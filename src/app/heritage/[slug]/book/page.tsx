@@ -3,7 +3,8 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, User, Phone, CreditCard, CheckCircle, ShieldCheck, Ticket } from "lucide-react";
+import { useSession } from "next-auth/react"; // 1. Import useSession untuk mengambil data user login
+import { ArrowLeft, User, Phone, CreditCard, ShieldCheck } from "lucide-react";
 
 // Deklarasi global untuk Midtrans Snap.js
 declare global {
@@ -21,6 +22,9 @@ export default function HeritageBookingPage({ params }: Props) {
   const slug = resolvedParams.slug;
   const router = useRouter();
 
+  // 2. Ambil sesi data user yang sedang login
+  const { data: session } = useSession();
+
   const [step, setStep] = useState<1 | 2>(1); // Step 1: Form, Step 2: Konfirmasi & Bayar
   const [loading, setLoading] = useState(false);
   const [heritageData, setHeritageData] = useState<any>(null);
@@ -33,12 +37,10 @@ export default function HeritageBookingPage({ params }: Props) {
     quantity: 1,
   });
 
-  const TICKET_PRICE = 500; // Harga tiket masuk heritage per orang
+  const TICKET_PRICE = 500; // Harga tiket masuk heritage per orang (bisa diubah sesuai kebutuhan)
 
-  // Ambil data heritage berdasarkan slug untuk info nama tempat & harga
+  // Ambil data heritage berdasarkan slug
   useEffect(() => {
-    // Anda bisa mengganti fetch ini dengan API endpoint /prisma query via server component jika dipecah, 
-    // atau fetch langsung ke route API get heritage
     fetch(`/api/heritage/${slug}`)
       .then((res) => res.json())
       .then((data) => setHeritageData(data))
@@ -77,6 +79,9 @@ export default function HeritageBookingPage({ params }: Props) {
   const handleProceedPayment = async () => {
     setLoading(true);
     try {
+      // Ambil email dari sesi login user, berikan fallback jika belum login
+      const userEmail = session?.user?.email || "visitor@medankarsa.com";
+
       // 1. Kirim data ke backend untuk membuat transaksi & mendapatkan Midtrans Snap Token
       const res = await fetch("/api/heritage/checkout", {
         method: "POST",
@@ -84,6 +89,7 @@ export default function HeritageBookingPage({ params }: Props) {
         body: JSON.stringify({
           slug,
           ...formData,
+          email: userEmail,
           totalPrice: TICKET_PRICE * formData.quantity,
         }),
       });
@@ -98,11 +104,17 @@ export default function HeritageBookingPage({ params }: Props) {
         onSuccess: async function (result: any) {
           alert("Pembayaran Berhasil! Tiket Anda sedang diproses.");
           
-          // Konfirmasi ke backend untuk generate tiket fix & kirim WhatsApp/Email
+          // 3. Konfirmasi ke backend untuk generate tiket fix & simpan ke database
           await fetch("/api/heritage/verify-payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderId, phone: formData.phone }),
+            body: JSON.stringify({
+              orderId,
+              name: formData.name,
+              phone: formData.phone,
+              email: userEmail,
+              paymentType: result.payment_type || "qris",
+            }),
           });
 
           // Redirect ke halaman sukses tiket digital
@@ -129,7 +141,7 @@ export default function HeritageBookingPage({ params }: Props) {
   };
 
   return (
-    <main className="min-h-screen bg-[#f8f3e8] text-[#173d2b] py-10 px-5">
+    <main className="min-h-screen bg-[#f8f3e8] text-[#173d2b] py-10 px-5 print:hidden">
       <div className="mx-auto max-w-2xl bg-white rounded-[30px] p-6 sm:p-10 shadow-sm">
         <Link href={`/heritage/${slug}`} className="inline-flex items-center gap-2 text-sm font-semibold text-[#667068] hover:text-[#173d2b] mb-6">
           <ArrowLeft size={17} /> Kembali ke Detail Tempat
@@ -143,6 +155,13 @@ export default function HeritageBookingPage({ params }: Props) {
             {heritageData?.name || "Memuat destinasi..."}
           </h1>
           <p className="text-xs text-gray-500 mt-1">Lengkapi data diri pengunjung dengan benar untuk penerbitan e-tiket resmi.</p>
+          
+          {/* Menampilkan info email akun yang terdeteksi */}
+          {session?.user?.email && (
+            <p className="text-[11px] text-[#b8860b] mt-2 font-medium">
+              Masuk sebagai: {session.user.email}
+            </p>
+          )}
         </div>
 
         {/* STEP 1: FORMULIR DATA DIRI */}

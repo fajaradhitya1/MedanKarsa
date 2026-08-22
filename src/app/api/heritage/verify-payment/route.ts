@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { orderId, phone, name, eventId, paymentType } = body;
+    const { orderId, phone, name, email, eventId, paymentType } = body;
 
     if (!orderId) {
       return NextResponse.json(
@@ -13,19 +13,20 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1. Cek apakah tiket dengan ticketCode (orderId) tersebut sudah ada
+    // 1. Cek apakah tiket dengan ticketCode tersebut sudah ada
     let existingTicket = await prisma.ticket.findUnique({
       where: { ticketCode: orderId },
     });
 
     if (existingTicket) {
-      // Jika status masih PENDING, ubah menjadi SUCCESS setelah verifikasi pembayaran
       if (existingTicket.status === "PENDING") {
         existingTicket = await prisma.ticket.update({
           where: { ticketCode: orderId },
           data: {
             status: "SUCCESS",
             paymentType: paymentType || "qris",
+            buyerName: name || existingTicket.buyerName,
+            buyerPhone: phone || existingTicket.buyerPhone,
           },
         });
       }
@@ -37,17 +38,29 @@ export async function POST(req: Request) {
       });
     }
 
-    // 2. Jika belum ada, buat data tiket baru menggunakan skema asli Anda
-    // Pastikan eventId valid (atau ambil event default/heritage terkait jika ada)
+    // 2. Ambil event pertama dari database jika eventId tidak disertakan (untuk mencegah foreign key error)
+    let targetEventId = eventId;
+    if (!targetEventId) {
+      const firstEvent = await prisma.event.findFirst();
+      if (!firstEvent) {
+        return NextResponse.json(
+          { success: false, message: "Tidak ada data Event/Heritage yang tersedia di database." },
+          { status: 400 }
+        );
+      }
+      targetEventId = firstEvent.id;
+    }
+
+    // 3. Buat data tiket baru ke database
     const newTicket = await prisma.ticket.create({
       data: {
         ticketCode: orderId,
         buyerName: name || "Pengunjung Medan Karsa",
-        buyerEmail: body.email || "visitor@medankarsa.com",
+        buyerEmail: email || "visitor@medankarsa.com",
         buyerPhone: phone || "-",
         status: "SUCCESS",
         paymentType: paymentType || "qris",
-        eventId: eventId || "default-event-id", // Sesuaikan dengan ID event/heritage yang valid di database Anda
+        eventId: targetEventId,
       },
     });
 
