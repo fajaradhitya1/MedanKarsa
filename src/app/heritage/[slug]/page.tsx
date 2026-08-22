@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, MapPin, Compass } from "lucide-react";
+import { ArrowLeft, MapPin, Compass, Ticket } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import HeritagePanorama, { PanoramaScene } from "@/components/heritage/HeritagePanorama";
 import HeritageImageCarousel from "@/components/heritage/HeritageImageCarousel";
@@ -22,11 +22,8 @@ export default async function HeritageDetailPage({ params }: Props) {
 
   const panoramaScenes = ((heritage as any).panoramaScenes as PanoramaScene[]) || [];
   
-  // Ambil coverImage dan array images dari database secara langsung
   const cover = heritage.coverImage ? [heritage.coverImage] : [];
   const dbImages = (heritage as any).images || [];
-  
-  // Gabungkan semua gambar
   const allImages = [...cover, ...dbImages].filter(Boolean);
 
   return (
@@ -47,15 +44,25 @@ export default async function HeritageDetailPage({ params }: Props) {
               </h1>
             </div>
 
-            <Link
-              href={`/heritage/${heritage.slug}/tour`}
-              className="inline-flex items-center gap-2 rounded-2xl bg-[#173d2b] px-6 py-3.5 text-sm font-bold text-white shadow-md transition hover:bg-[#0f291d]"
-            >
-              <Compass size={18} className="text-[#f1c76e]" /> Mulai Tur Virtual 360°
-            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href={`/heritage/${heritage.slug}/tour`}
+                className="inline-flex items-center gap-2 rounded-2xl bg-[#173d2b] px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#0f291d]"
+              >
+                <Compass size={18} className="text-[#f1c76e]" /> Tur 360°
+              </Link>
+
+              {/* Tombol Beli Tiket Masuk */}
+              <Link
+                href={`/heritage/${heritage.slug}/book`}
+                className="inline-flex items-center gap-2 rounded-2xl bg-[#b8860b] px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#996f08]"
+              >
+                <Ticket size={18} /> Beli Tiket Masuk
+              </Link>
+            </div>
           </div>
 
-          {/* TAMPILKAN 360 PANORAMA ATAU CAROUSEL */}
+          {/* PANORAMA / CAROUSEL */}
           {panoramaScenes.length > 0 ? (
             <div className="mb-10">
               <div className="mb-4 flex items-center justify-between">
@@ -86,18 +93,33 @@ export default async function HeritageDetailPage({ params }: Props) {
               )}
             </article>
 
-            <aside className="h-fit rounded-2xl bg-[#f5f0e6] p-5">
-              <h3 className="font-serif text-xl font-bold">Informasi</h3>
-              <div className="mt-5 space-y-4">
-                {heritage.address && (
-                  <div className="flex gap-3">
-                    <MapPin className="shrink-0 text-[#21633f]" size={19} />
-                    <div>
-                      <p className="text-xs text-[#888d86]">Lokasi</p>
-                      <p className="mt-1 text-sm font-semibold">{heritage.address}</p>
+            <aside className="h-fit rounded-2xl bg-[#f5f0e6] p-5 space-y-6">
+              <div>
+                <h3 className="font-serif text-xl font-bold">Informasi</h3>
+                <div className="mt-4 space-y-4">
+                  {heritage.address && (
+                    <div className="flex gap-3">
+                      <MapPin className="shrink-0 text-[#21633f]" size={19} />
+                      <div>
+                        <p className="text-xs text-[#888d86]">Lokasi</p>
+                        <p className="mt-1 text-sm font-semibold">{heritage.address}</p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
+              </div>
+
+              {/* Card Ringkasan Tiket Masuk di Sidebar */}
+              <div className="rounded-xl bg-white p-4 shadow-sm border border-[#173d2b]/10">
+                <p className="text-xs font-bold text-[#b8860b] uppercase tracking-wider">Tiket Masuk Resmi</p>
+                <p className="mt-1 text-lg font-serif font-bold text-[#173d2b]">Rp 15.000 <span className="text-xs font-sans text-gray-500">/ orang</span></p>
+                <p className="mt-2 text-xs text-[#697067]">Tiket berlaku untuk 1 hari kunjungan dengan sistem QR Code.</p>
+                <Link
+                  href={`/heritage/${heritage.slug}/book`}
+                  className="mt-4 block w-full rounded-xl bg-[#173d2b] py-2.5 text-center text-xs font-bold text-white transition hover:bg-[#0f291d]"
+                >
+                  Pesan Sekarang
+                </Link>
               </div>
             </aside>
           </div>
