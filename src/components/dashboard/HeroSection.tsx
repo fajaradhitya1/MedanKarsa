@@ -42,12 +42,7 @@ export default function DashboardHero() {
               >
                 Mulai Jelajah <ArrowRight size={16} />
               </Link>
-              <Link
-                href="/video"
-                className="flex items-center gap-2 rounded-2xl bg-white/90 px-7 py-3.5 text-sm font-bold text-[#173d2b] backdrop-blur-md shadow-xs transition hover:bg-white"
-              >
-                <Play size={15} className="fill-[#173d2b]" /> Lihat Video
-              </Link>
+             
             </div>
             
           </div>
