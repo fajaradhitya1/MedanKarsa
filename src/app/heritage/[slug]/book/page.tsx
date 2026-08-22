@@ -37,7 +37,7 @@ export default function HeritageBookingPage({ params }: Props) {
     quantity: 1,
   });
 
-  const TICKET_PRICE = 500; // Harga tiket masuk heritage per orang (bisa diubah sesuai kebutuhan)
+  const TICKET_PRICE = 15000; // Harga tiket masuk heritage per orang (bisa diubah sesuai kebutuhan)
 
   // Ambil data heritage berdasarkan slug
   useEffect(() => {
