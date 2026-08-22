@@ -40,9 +40,8 @@ export default async function HeritageDetailPage({ params }: Props) {
           <span className="text-[#173d2b]">{heritage.name}</span>
         </div>
 
-        {/* HERO BANNER UTAMA (Full Lebar dengan Galeri/Carousel di dalam) */}
+        {/* HERO BANNER UTAMA */}
         <div className="relative mb-10 overflow-hidden rounded-[32px] bg-[#173d2b] text-white shadow-xl">
-          {/* Background Image & Overlay */}
           <div className="absolute inset-0 z-0">
             <img 
               src={mainImage} 
@@ -53,14 +52,12 @@ export default async function HeritageDetailPage({ params }: Props) {
           </div>
 
           <div className="relative z-10 p-6 sm:p-12 flex flex-col justify-between min-h-[480px]">
-            {/* Kategori Badge */}
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-[#173d2b] border border-[#e2b45e]/60 px-4 py-1.5 text-xs font-bold text-[#f1c76e] shadow-sm">
                 <Sparkles size={13} /> {heritage.category || "SEJARAH"}
               </span>
             </div>
 
-            {/* Informasi Judul & Tombol Aksi Hero */}
             <div className="mt-24 space-y-4">
               <h1 className="font-serif text-4xl sm:text-6xl font-bold tracking-tight text-white drop-shadow-md">
                 {heritage.name}
@@ -81,7 +78,7 @@ export default async function HeritageDetailPage({ params }: Props) {
                   href={`/heritage/${heritage.slug}/book`}
                   className="inline-flex items-center gap-2 rounded-2xl bg-[#b8860b] px-6 py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-[#996f08]"
                 >
-                  <Ticket size={18} /> Galeri Foto / Tiket
+                  <Ticket size={18} /> Beli Tiket Masuk
                 </Link>
               </div>
             </div>
@@ -110,10 +107,8 @@ export default async function HeritageDetailPage({ params }: Props) {
         {/* KONTEN UTAMA & SIDEBAR PRAKTIS */}
         <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
           
-          {/* Kolom Kiri: Tentang Tempat Ini, Sejarah, & Fasilitas */}
           <article className="space-y-8">
             
-            {/* Card Tentang Tempat Ini */}
             <div className="rounded-[30px] bg-white p-6 sm:p-10 shadow-sm border border-gray-100">
               <div className="flex items-center gap-2 text-[#b8860b] font-bold text-xs uppercase tracking-wider mb-2">
                 <Building2 size={16} /> Mengenal Lebih Dekat
@@ -122,7 +117,6 @@ export default async function HeritageDetailPage({ params }: Props) {
               <p className="mt-4 text-sm sm:text-base leading-8 text-[#697067]">{heritage.description}</p>
             </div>
 
-            {/* Card Sejarah */}
             {heritage.history && (
               <div className="rounded-[30px] bg-white p-6 sm:p-10 shadow-sm border border-gray-100">
                 <div className="flex items-center gap-2 text-[#b8860b] font-bold text-xs uppercase tracking-wider mb-2">
@@ -145,7 +139,6 @@ export default async function HeritageDetailPage({ params }: Props) {
               </div>
             )}
 
-            {/* Fasilitas & Sorotan Grid */}
             <div className="rounded-[30px] bg-white p-6 sm:p-10 shadow-sm border border-gray-100">
               <h3 className="font-serif text-2xl font-bold text-[#173d2b] mb-6">Fasilitas & Sorotan</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -185,10 +178,8 @@ export default async function HeritageDetailPage({ params }: Props) {
 
           </article>
 
-          {/* Kolom Kanan: Informasi Praktis & Widget Tiket */}
           <aside className="space-y-6">
             
-            {/* Card Informasi Praktis */}
             <div className="rounded-[30px] bg-white p-6 shadow-sm border border-gray-100 space-y-5">
               <h3 className="font-serif text-xl font-bold text-[#173d2b]">Informasi Praktis</h3>
               
@@ -227,7 +218,6 @@ export default async function HeritageDetailPage({ params }: Props) {
               </div>
             </div>
 
-            {/* Card Widget Tiket Masuk */}
             <div className="rounded-[30px] bg-[#173d2b] text-white p-6 shadow-xl relative overflow-hidden">
               <div className="absolute -right-6 -bottom-6 opacity-10 pointer-events-none">
                 <Ticket size={140} />
@@ -256,13 +246,12 @@ export default async function HeritageDetailPage({ params }: Props) {
               </div>
             </div>
 
-            {/* Bagikan Halaman Ini */}
             <div className="rounded-[30px] bg-white p-6 shadow-sm border border-gray-100 text-center space-y-3">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Bagikan Halaman Ini</p>
               <div className="flex justify-center gap-3">
-                <button onClick={() => alert("Tautan berhasil disalin!")} className="p-3 rounded-full bg-[#f8f3e8] text-[#173d2b] hover:bg-gray-200 transition">
+                <div className="p-3 rounded-full bg-[#f8f3e8] text-[#173d2b]">
                   <Share2 size={16} />
-                </button>
+                </div>
               </div>
             </div>
 
