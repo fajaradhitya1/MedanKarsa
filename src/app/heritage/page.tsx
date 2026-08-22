@@ -1,21 +1,67 @@
 import HeritageHero from "@/components/heritage/HeritageHero";
 import HeritageSearch from "@/components/heritage/HeritageSearch";
 import HeritageGrid from "@/components/heritage/HeritageGrid";
-import Footer from "@/components/layout/Footer"; // 1. Import Footer yang sudah Anda buat
+import Footer from "@/components/layout/Footer";
 
-import { prisma } from "@/lib/prisma";
-
-export default async function HeritagePage() {
-  const heritage = await prisma.heritage.findMany({
-    orderBy: {
-      createdAt: "desc",
+export default function HeritagePage() {
+  // Langsung masukkan data di sini tanpa database
+  const typedHeritage = [
+    {
+      id: "1",
+      name: "Rumah Tjong A Fie",
+      slug: "rumah-tjong-a-fie",
+      description: "Bangunan bersejarah peninggalan Tjong A Fie yang menjadi salah satu ikon sejarah Kota Medan.",
+      history: "Rumah Tjong A Fie merupakan salah satu bangunan bersejarah yang menggambarkan kehidupan masyarakat Medan pada masa lalu.",
+      coverImage: "/assets/tjongafi/tjongafi.jpeg",
+      address: "Jl. Jenderal Ahmad Yani No.105, Kesawan, Medan",
+      images: [
+        "/assets/tjongafi/halaman.jpeg",
+        "/assets/tjongafi/ruangan.jpeg",
+        "/assets/tjongafi/ruangtamu.jpeg"
+      ],
+      latitude: 3.5882,
+      longitude: 98.6781,
+      category: "SEJARAH" as const,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
-  });
-
-  const typedHeritage = heritage.map((item) => ({
-    ...item,
-    category: item.category as "SEJARAH" | "BUDAYA" | "KULINER" | "SENI" | "ARSITEKTUR",
-  }));
+    {
+      id: "2",
+      name: "Istana Maimun",
+      slug: "istana-maimun",
+      description: "Istana Kesultanan Deli yang menjadi salah satu landmark budaya dan sejarah Kota Medan.",
+      history: "Istana Maimun merupakan peninggalan Kesultanan Deli dan menjadi salah satu destinasi wisata sejarah terkenal di Medan.",
+      coverImage: "/assets/istanamaimun/cover1.jpg",
+      address: "Jl. Brigjen Katamso No.66, Sukaraja, Medan",
+      images: [
+        "/assets/istanamaimun/cover.jpeg",
+        "/assets/istanamaimun/cover2.jpeg"
+      ],
+      latitude: 3.5752,
+      longitude: 98.6839,
+      category: "ARSITEKTUR" as const,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: "3",
+      name: "Rumah Tjong Yong Hian",
+      slug: "rumah-tjong-yong-hian",
+      description: "Salah satu bangunan bersejarah yang berkaitan dengan perkembangan Kota Medan pada masa kolonial.",
+      history: "Rumah Tjong Yong Hian menjadi bagian dari sejarah perkembangan kawasan Kesawan dan perdagangan di Kota Medan.",
+      coverImage: "/assets/Taman_Tjong_Yong_Hian_di_Medan.jpg",
+      address: "Kesawan, Medan",
+      latitude: 3.5901,
+      longitude: 98.6785,
+      images: [
+        "/assets/Taman.jpg",
+        "/assets/rumah2.jpeg"
+      ],
+      category: "SEJARAH" as const,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ];
 
   return (
     <main className="min-h-screen bg-[#ffff] text-[#173d2b] flex flex-col justify-between">
@@ -47,7 +93,6 @@ export default async function HeritagePage() {
         </div>
       </div>
 
-      {/* 2. Pasang Footer di sini tanpa mengubah desain aslinya */}
       <Footer />
     </main>
   );
