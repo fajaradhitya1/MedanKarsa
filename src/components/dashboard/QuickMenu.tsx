@@ -26,16 +26,6 @@ const menus = [
     href: "/umkm",
   },
   {
-    icon: MapPin,
-    label: "Peta Medan",
-    href: "/map",
-  },
-  {
-    icon: CircleAlert,
-    label: "Lapor",
-    href: "/report",
-  },
-  {
     icon: Ticket,
     label: "Tiket",
     href: "/event",
