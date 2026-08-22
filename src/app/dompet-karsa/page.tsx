@@ -4,8 +4,10 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Wallet, Award, ArrowUpRight, ArrowDownLeft, Ticket, Sparkles, Gift } from "lucide-react";
 
+export const dynamic = "force-dynamic"; // Mencegah prerender statis yang memicu error build
+
 export default async function DompetKarsaPage() {
-  let totalPoints = 450; // Nilai default aman jika database offline
+  let totalPoints = 450; 
 
   try {
     const session = await auth();
@@ -25,7 +27,6 @@ export default async function DompetKarsaPage() {
       }
     }
   } catch (err) {
-    // Jika koneksi database gagal/offline, tetap tampilkan halaman menggunakan data cadangan
     console.warn("Database offline, menggunakan data poin dummy untuk sementara.");
   }
 
@@ -189,17 +190,15 @@ export default async function DompetKarsaPage() {
                   </div>
 
                   <div className="p-6 pt-0">
-                    <button
-                      disabled={!canRedeem}
-                      onClick={() => alert(canRedeem ? `Berhasil menukar ${item.title}!` : "Poin Anda belum mencukupi!")}
-                      className={`w-full py-3 rounded-xl text-xs font-bold transition shadow-sm ${
+                    <span
+                      className={`block w-full py-3 rounded-xl text-xs font-bold text-center transition shadow-sm ${
                         canRedeem
                           ? "bg-[#173d2b] text-white hover:bg-[#0f291d]"
                           : "bg-gray-100 text-gray-400 cursor-not-allowed"
                       }`}
                     >
                       {canRedeem ? "Tukar Poin Sekarang" : "Poin Belum Cukup"}
-                    </button>
+                    </span>
                   </div>
                 </div>
               );
