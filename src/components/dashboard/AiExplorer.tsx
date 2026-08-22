@@ -239,7 +239,7 @@ export default function AiExplorer() {
 
         <div className="relative min-h-[300px]">
           <img
-            src="https://images.unsplash.com/photo-1518391846015-55a9cc003b25?q=80&w=1000&auto=format&fit=crop"
+            src="/assets/medan.jpeg"
             alt="Medan Explorer"
             className="absolute inset-0 h-full w-full object-cover"
           />
