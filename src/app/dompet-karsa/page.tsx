@@ -1,24 +1,33 @@
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth"; // Mengimpor fungsi auth dari konfigurasi NextAuth v5 Anda
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Wallet, Award, ArrowUpRight, ArrowDownLeft, Ticket, Sparkles, Gift } from "lucide-react";
 
 export default async function DompetKarsaPage() {
-  const session = await auth(); // Menggunakan fungsi auth()
+  let totalPoints = 450; // Nilai default aman jika database offline
 
-  if (!session || !session.user) {
-    redirect("/login"); // Mengarahkan ke halaman /login sesuai konfigurasi
+  try {
+    const session = await auth();
+
+    if (!session || !session.user) {
+      redirect("/login");
+    }
+
+    const userEmail = session.user.email;
+
+    if (userEmail) {
+      const dbUser = await prisma.user.findUnique({
+        where: { email: userEmail },
+      });
+      if (dbUser && (dbUser as any).points !== undefined) {
+        totalPoints = (dbUser as any).points;
+      }
+    }
+  } catch (err) {
+    // Jika koneksi database gagal/offline, tetap tampilkan halaman menggunakan data cadangan
+    console.warn("Database offline, menggunakan data poin dummy untuk sementara.");
   }
-
-  const userEmail = session.user.email;
-
-  // Ambil data user dari database
-  const dbUser = await prisma.user.findUnique({
-    where: { email: userEmail || "" },
-  });
-
-  const totalPoints = (dbUser as any)?.points || 450; 
 
   const rewardCatalog = [
     {
@@ -92,6 +101,7 @@ export default async function DompetKarsaPage() {
 
         {/* RIWAYAT & CARA KERJA */}
         <div className="grid gap-8 lg:grid-cols-3">
+          
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-[30px] p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6">
               <div className="flex items-center justify-between">
