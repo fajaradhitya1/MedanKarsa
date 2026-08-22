@@ -40,8 +40,6 @@ export default function DashboardPage() {
 
       {/* 3. FOOTER FULL WIDTH DENGAN LENGKUNGAN SVG DI ATASNYA */}
       <Footer />
-
-      <BottomNavigation />
     </main>
   );
 }
