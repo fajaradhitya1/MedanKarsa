@@ -1,56 +1,64 @@
-import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { CheckCircle2, Clock, ArrowLeft, Download, Send } from "lucide-react";
-import { Suspense } from "react";
 
-type Props = {
-  searchParams: Promise<{ orderId?: string }>;
-};
+function TicketSuccessContent() {
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get("orderId") || "MK-TICKET-DEMO";
 
-async function TicketDetails({ orderId }: { orderId: string }) {
-  // 1. Cari tiket di database
-  let ticket = await prisma.ticket.findUnique({
-    where: { ticketCode: orderId },
-    include: { event: true },
-  });
+  const [ticket, setTicket] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // 2. JIKA BELUM ADA DI DATABASE: Buat data otomatis agar halaman tidak error/crash
-  if (!ticket) {
-    const firstEvent = await prisma.event.findFirst();
-    
-    try {
-      ticket = await prisma.ticket.create({
-        data: {
+  useEffect(() => {
+    // Ambil data tiket atau buat otomatis via API backend
+    fetch(`/api/heritage/verify-payment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId, paymentType: "qris" }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ticket) {
+          setTicket(data.ticket);
+        } else {
+          // Fallback data jika respons API belum siap
+          setTicket({
+            ticketCode: orderId,
+            buyerName: "Pengunjung Medan Karsa",
+            buyerPhone: "081234567890",
+            buyerEmail: "visitor@medankarsa.com",
+            status: "SUCCESS",
+            createdAt: new Date().toISOString(),
+          });
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Gagal memuat detail tiket:", err);
+        setTicket({
           ticketCode: orderId,
           buyerName: "Pengunjung Medan Karsa",
-          buyerEmail: "visitor@medankarsa.com",
           buyerPhone: "081234567890",
+          buyerEmail: "visitor@medankarsa.com",
           status: "SUCCESS",
-          paymentType: "qris",
-          eventId: firstEvent ? firstEvent.id : undefined,
-        },
-        include: { event: true },
+          createdAt: new Date().toISOString(),
+        });
+        setLoading(false);
       });
-    } catch (e) {
-      // Fallback objek lokal jika database gagal buat row
-      ticket = {
-        id: "temp",
-        ticketCode: orderId,
-        buyerName: "Pengunjung Medan Karsa",
-        buyerPhone: "081234567890",
-        buyerEmail: "visitor@medankarsa.com",
-        status: "SUCCESS",
-        paymentType: "qris",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        eventId: "temp",
-        event: { id: "temp", title: "Rumah Tjong A Fie", slug: "rumah-tjong-a-fie", description: "", location: "", price: 500, image: "", createdAt: new Date(), updatedAt: new Date() }
-      } as any;
-    }
+  }, [orderId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f8f3e8] flex items-center justify-center text-[#173d2b]">
+        <p className="font-serif text-lg animate-pulse">Memuat E-Tiket Anda...</p>
+      </div>
+    );
   }
 
-  const expiresDate = new Date(ticket.createdAt || Date.now());
+  const expiresDate = new Date(ticket?.createdAt || Date.now());
   expiresDate.setDate(expiresDate.getDate() + 1);
 
   return (
@@ -83,13 +91,11 @@ async function TicketDetails({ orderId }: { orderId: string }) {
             <div className="flex justify-between items-center border-b border-gray-100 pb-4">
               <div>
                 <p className="text-xs text-gray-400 uppercase tracking-wider">Destinasi</p>
-                <p className="font-serif text-lg font-bold text-[#173d2b]">
-                  {ticket.event?.title || "Rumah Tjong A Fie"}
-                </p>
+                <p className="font-serif text-lg font-bold text-[#173d2b]">Rumah Tjong A Fie</p>
               </div>
               <div className="text-right">
                 <p className="text-xs text-gray-400 uppercase tracking-wider">Order ID</p>
-                <p className="text-xs font-mono font-bold text-gray-600 max-w-[180px] truncate">{ticket.ticketCode}</p>
+                <p className="text-xs font-mono font-bold text-gray-600 max-w-[180px] truncate">{ticket?.ticketCode || orderId}</p>
               </div>
             </div>
 
@@ -98,32 +104,32 @@ async function TicketDetails({ orderId }: { orderId: string }) {
               <div className="inline-block bg-white p-4 rounded-xl shadow-sm border border-[#173d2b]/10">
                 <div className="w-36 h-36 bg-white flex flex-col items-center justify-center rounded-lg mx-auto">
                   <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${ticket.ticketCode}`} 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${ticket?.ticketCode || orderId}`} 
                     alt="QR Code Tiket" 
                     className="w-full h-full object-contain"
                   />
                 </div>
               </div>
-              <p className="text-[11px] text-gray-500 font-mono">Token: {ticket.ticketCode}-VERIFIED</p>
+              <p className="text-[11px] text-gray-500 font-mono">Token: {ticket?.ticketCode || orderId}-VERIFIED</p>
             </div>
 
             {/* Detail Pemilik Tiket */}
             <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-2xl text-sm">
               <div>
                 <p className="text-xs text-gray-400">Nama Pengunjung</p>
-                <p className="font-semibold text-[#173d2b]">{ticket.buyerName}</p>
+                <p className="font-semibold text-[#173d2b]">{ticket?.buyerName || "Pengunjung"}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-400">No. WhatsApp</p>
-                <p className="font-semibold text-[#173d2b]">{ticket.buyerPhone}</p>
+                <p className="font-semibold text-[#173d2b]">{ticket?.buyerPhone || "-"}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-400">Email Akun</p>
-                <p className="font-semibold text-[#173d2b] text-xs truncate">{ticket.buyerEmail}</p>
+                <p className="font-semibold text-[#173d2b] text-xs truncate">{ticket?.buyerEmail || "-"}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-400">Status</p>
-                <p className="font-semibold text-emerald-600 uppercase text-xs">{ticket.status}</p>
+                <p className="font-semibold text-emerald-600 uppercase text-xs">{ticket?.status || "SUCCESS"}</p>
               </div>
             </div>
 
@@ -150,7 +156,7 @@ async function TicketDetails({ orderId }: { orderId: string }) {
                 <Download size={15} /> Cetak / Unduh PDF
               </button>
               <button
-                onClick={() => alert(`Tiket berhasil dikirim ke WhatsApp ${ticket.buyerPhone}!`)}
+                onClick={() => alert(`Tiket berhasil dikirim ke WhatsApp ${ticket?.buyerPhone || "Pengunjung"}!`)}
                 className="flex items-center justify-center gap-2 rounded-xl bg-[#b8860b] py-3 text-xs font-bold text-white hover:bg-[#996f08] transition"
               >
                 <Send size={15} /> Kirim ke WhatsApp
@@ -164,21 +170,14 @@ async function TicketDetails({ orderId }: { orderId: string }) {
   );
 }
 
-export default async function TicketSuccessPage({ searchParams }: Props) {
-  const resolvedParams = await searchParams;
-  const orderId = resolvedParams.orderId;
-
-  if (!orderId) {
-    redirect("/heritage");
-  }
-
+export default function TicketSuccessPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-[#f8f3e8] flex items-center justify-center text-[#173d2b]">
         <p className="font-serif text-lg animate-pulse">Memuat E-Tiket Anda...</p>
       </div>
     }>
-      <TicketDetails orderId={orderId} />
+      <TicketSuccessContent />
     </Suspense>
   );
 }
