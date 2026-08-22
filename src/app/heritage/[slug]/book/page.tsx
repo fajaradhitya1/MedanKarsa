@@ -33,7 +33,7 @@ export default function HeritageBookingPage({ params }: Props) {
     quantity: 1,
   });
 
-  const TICKET_PRICE = 15; // Harga tiket masuk heritage per orang
+  const TICKET_PRICE = 500; // Harga tiket masuk heritage per orang
 
   // Ambil data heritage berdasarkan slug untuk info nama tempat & harga
   useEffect(() => {
