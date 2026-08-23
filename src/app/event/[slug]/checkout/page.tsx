@@ -105,11 +105,24 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       
       if (response.ok && data.token) {
         window.snap.pay(data.token, {
-          onSuccess: function (result: any) {
-            // Ambil orderId dari respons Midtrans atau data backend
-            const orderId = result.order_id || data.orderId || `MDK-${Date.now()}`;
-            
-            // Redirect langsung ke halaman E-Tiket Sukses Event
+          onSuccess: async function (result: any) {
+            const orderId = result.order_id || data.orderId;
+
+            // 1. Panggil API Verifikasi agar status tiket LUNAS dan POIN otomatis bertambah ke Dompet Karsa
+            try {
+              await fetch("/api/ticket/verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                  orderId, 
+                  paymentType: result.payment_type || "QRIS" 
+                }),
+              });
+            } catch (verifyErr) {
+              console.error("Gagal verifikasi otomatis poin:", verifyErr);
+            }
+
+            // 2. Redirect ke halaman E-Tiket Sukses Event
             window.location.href = `/event/ticket/success?orderId=${orderId}`;
           },
           onPending: function (result: any) {

@@ -59,14 +59,14 @@ export async function POST(req: Request) {
     // 3. Request Snap Token dari Midtrans
     const transaction = await snap.createTransaction(parameter);
 
-    // 4. SIMPAN TIKET KE DATABASE SEGERA (Penting agar data tiket nyata!)
+    // 4. SIMPAN TIKET KE DATABASE SEGERA
     await prisma.ticket.create({
       data: {
         ticketCode: orderId,
         buyerName: buyerName,
         buyerEmail: email,
         buyerPhone: phone,
-        status: "PENDING", // Akan diubah menjadi SUCCESS nanti
+        status: "PENDING",
         paymentType: "QRIS",
         eventId: event.id,
       },
