@@ -23,7 +23,7 @@ export default async function HeritageDetailPage({ params }: Props) {
       history: "Gedung Kantor PT London Sumatra Indonesia Tbk ini dibangun pada tahun 1906 dan menjadi pusat perdagangan penting di era kolonial.",
       coverImage: "/assets/heritage/londonsumatra_cover.jpeg",
       address: "Jl. Jend. Ahmad Yani No.2, Kesawan, Medan",
-      images: ["/assets/lonsum/detail1.jpeg", "/assets/lonsum/detail2.jpeg"],
+      images: ["/assets/heritage/londonsumatra_cover.jpeg", "/assets/heritage/londonsumatra_cover.jpeg"],
       category: "ARSITEKTUR",
     },
     "masjid-raya-al-mashun": {
@@ -34,7 +34,7 @@ export default async function HeritageDetailPage({ params }: Props) {
       history: "Dibangun pada tahun 1906 oleh Sultan Ma'mun Al Rashid Perkasa Alam, masjid ini menjadi lambang keagungan Kesultanan Deli.",
       coverImage: "/assets/masjidraya/masjid.jpeg",
       address: "Jl. Sisingamangaraja No.74c, Mesjid, Medan",
-      images: ["/assets/masjidraya/interior.jpeg", "/assets/masjidraya/halaman.jpeg"],
+      images: ["/assets/masjidraya/masjid.jpeg", "/assets/masjidraya/masjid.jpeg"],
       category: "ARSITEKTUR",
     },
   };
