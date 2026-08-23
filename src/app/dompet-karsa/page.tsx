@@ -4,30 +4,35 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Wallet, Award, ArrowUpRight, ArrowDownLeft, Ticket, Sparkles, Gift } from "lucide-react";
 
-export const dynamic = "force-dynamic"; // Mencegah prerender statis yang memicu error build
+export const dynamic = "force-dynamic";
 
 export default async function DompetKarsaPage() {
-  let totalPoints = 450; 
+  let totalPoints = 0;
+  let pointHistory: Array<{ id: string; description: string; amount: number; createdAt: Date }> = [];
 
   try {
     const session = await auth();
 
-    if (!session || !session.user) {
+    if (!session || !session.user?.email) {
       redirect("/login");
     }
 
-    const userEmail = session.user.email;
+    const dbUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: {
+        pointTransactions: {
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    });
 
-    if (userEmail) {
-      const dbUser = await prisma.user.findUnique({
-        where: { email: userEmail },
-      });
-      if (dbUser && (dbUser as any).points !== undefined) {
-        totalPoints = (dbUser as any).points;
-      }
+    if (dbUser) {
+      pointHistory = dbUser.pointTransactions;
+      // Hitung total poin secara real-time dari seluruh transaksi (masuk - keluar)
+      totalPoints = dbUser.pointTransactions.reduce((acc, tx) => acc + tx.amount, 0);
     }
   } catch (err) {
-    console.warn("Database offline, menggunakan data poin dummy untuk sementara.");
+    console.warn("Gagal terhubung ke database, menggunakan data default.");
   }
 
   const rewardCatalog = [
@@ -58,7 +63,6 @@ export default async function DompetKarsaPage() {
     <main className="min-h-screen bg-[#f8f3e8] text-[#173d2b] pb-20">
       <div className="mx-auto max-w-5xl px-5 py-8 lg:px-8 space-y-8">
         
-        {/* Header Title */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <span className="bg-[#b8860b]/20 text-[#b8860b] text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider">
@@ -75,7 +79,7 @@ export default async function DompetKarsaPage() {
           </Link>
         </div>
 
-        {/* SALDO POIN CARD (HERO) */}
+        {/* SALDO POIN CARD */}
         <div className="relative rounded-[32px] bg-linear-to-br from-[#173d2b] to-[#0f291d] text-white p-8 sm:p-10 shadow-xl overflow-hidden">
           <div className="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
             <Award size={220} />
@@ -94,15 +98,18 @@ export default async function DompetKarsaPage() {
             </div>
             <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center shrink-0 w-full sm:w-auto">
               <p className="text-[11px] text-gray-300 uppercase font-semibold">Status Member</p>
-              <p className="text-lg font-serif font-bold text-[#f1c76e] mt-0.5">Gold Explorer 🌟</p>
-              <p className="text-[10px] text-gray-300 mt-1">150 poin lagi menuju Platinum</p>
+              <p className="text-lg font-serif font-bold text-[#f1c76e] mt-0.5">
+                {totalPoints >= 1000 ? "Platinum Explorer 💎" : "Gold Explorer 🌟"}
+              </p>
+              <p className="text-[10px] text-gray-300 mt-1">
+                {totalPoints >= 1000 ? "Status Tertinggi Tercapai!" : `${Math.max(0, 1000 - totalPoints)} poin lagi menuju Platinum`}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* RIWAYAT & CARA KERJA */}
+        {/* RIWAYAT TRANSAKSI REAL-TIME */}
         <div className="grid gap-8 lg:grid-cols-3">
-          
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-[30px] p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6">
               <div className="flex items-center justify-between">
@@ -111,31 +118,31 @@ export default async function DompetKarsaPage() {
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-100">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                      <ArrowDownLeft size={18} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-[#173d2b]">Pembelian Tiket Rumah Tjong A Fie</p>
-                      <p className="text-[11px] text-gray-400">23 Agustus 2026 • KODE: MK-HERITAGE-787</p>
-                    </div>
-                  </div>
-                  <span className="text-sm font-bold text-emerald-600">+50 Poin</span>
-                </div>
-
-                <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-100">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                      <ArrowDownLeft size={18} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-[#173d2b]">Bonus Pendaftaran Akun Baru</p>
-                      <p className="text-[11px] text-gray-400">21 Agustus 2026 • Welcome Reward</p>
-                    </div>
-                  </div>
-                  <span className="text-sm font-bold text-emerald-600">+400 Poin</span>
-                </div>
+                {pointHistory.length > 0 ? (
+                  pointHistory.map((tx) => {
+                    const isPlus = tx.amount > 0;
+                    return (
+                      <div key={tx.id} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-100">
+                        <div className="flex items-center gap-3.5">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isPlus ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                            {isPlus ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-[#173d2b]">{tx.description}</p>
+                            <p className="text-[11px] text-gray-400">
+                              {new Date(tx.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                            </p>
+                          </div>
+                        </div>
+                        <span className={`text-sm font-bold ${isPlus ? "text-emerald-600" : "text-amber-600"}`}>
+                          {isPlus ? `+${tx.amount}` : tx.amount} Poin
+                        </span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-xs text-gray-400 text-center py-6">Belum ada riwayat transaksi poin tercatat.</p>
+                )}
               </div>
             </div>
           </div>
@@ -146,21 +153,15 @@ export default async function DompetKarsaPage() {
                 <Sparkles size={18} /> Cara Kerja Dompet Karsa
               </div>
               <ul className="space-y-3 text-xs text-gray-600 leading-relaxed">
-                <li className="flex gap-2">
-                  <span className="font-bold text-[#173d2b]">1.</span> Beli tiket masuk situs cagar budaya atau event menarik di Medan.
-                </li>
-                <li className="flex gap-2">
-                  <span className="font-bold text-[#173d2b]">2.</span> Poin otomatis masuk ke akun Anda setelah pembayaran lunas terverifikasi.
-                </li>
-                <li className="flex gap-2">
-                  <span className="font-bold text-[#173d2b]">3.</span> Tukarkan poin terkumpul untuk mendapatkan e-tiket gratis tanpa biaya tambahan!
-                </li>
+                <li className="flex gap-2"><span className="font-bold text-[#173d2b]">1.</span> Beli tiket masuk cagar budaya atau event di Medan.</li>
+                <li className="flex gap-2"><span className="font-bold text-[#173d2b]">2.</span> Poin otomatis masuk setelah pembayaran terverifikasi.</li>
+                <li className="flex gap-2"><span className="font-bold text-[#173d2b]">3.</span> Tukar poin untuk mendapatkan e-tiket gratis!</li>
               </ul>
             </div>
           </div>
         </div>
 
-        {/* KATALOG PENUKARAN POIN */}
+        {/* KATALOG PENUKARAN */}
         <section className="space-y-6 pt-4">
           <div className="flex items-center justify-between">
             <div>
@@ -188,15 +189,8 @@ export default async function DompetKarsaPage() {
                       </p>
                     </div>
                   </div>
-
                   <div className="p-6 pt-0">
-                    <span
-                      className={`block w-full py-3 rounded-xl text-xs font-bold text-center transition shadow-sm ${
-                        canRedeem
-                          ? "bg-[#173d2b] text-white hover:bg-[#0f291d]"
-                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                      }`}
-                    >
+                    <span className={`block w-full py-3 rounded-xl text-xs font-bold text-center transition shadow-sm ${canRedeem ? "bg-[#173d2b] text-white" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
                       {canRedeem ? "Tukar Poin Sekarang" : "Poin Belum Cukup"}
                     </span>
                   </div>
