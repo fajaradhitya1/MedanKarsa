@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Home, Map, User, Calendar, Store } from "lucide-react";
+import { Bell, Home, Map, User, Calendar, Store, Wallet, LogOut, ChevronRight } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
 
@@ -161,7 +161,7 @@ export default function Navbar() {
               {/* ACCOUNT DROPDOWN */}
               <div className="relative">
                 <div className="group relative inline-block">
-                  <button className="flex items-center gap-2 rounded-full bg-white px-3 py-2 shadow-sm transition hover:shadow-md cursor-pointer">
+                  <button className="flex items-center gap-2 rounded-full bg-white px-3.5 py-2 shadow-sm transition hover:shadow-md cursor-pointer border border-[#e8dfcf]/60">
                     {session.user?.image ? (
                       <img
                         src={session.user.image}
@@ -179,16 +179,43 @@ export default function Navbar() {
                     </span>
                   </button>
 
-                  <div className="absolute right-0 top-full pt-2 hidden group-hover:flex flex-col w-48 z-50">
-                    <div className="rounded-xl border border-[#e8dfcf] bg-white p-2 shadow-xl">
+                  <div className="absolute right-0 top-full pt-2 hidden group-hover:flex flex-col w-56 z-50">
+                    <div className="rounded-2xl border border-[#e8dfcf] bg-white p-2 shadow-xl space-y-1">
+                      
+                      {!isAdmin && (
+                        <>
+                          <Link
+                            href="/akun"
+                            className="flex items-center justify-between w-full rounded-xl px-4 py-2.5 text-xs font-semibold text-[#173d2b] transition hover:bg-[#f8f3e8]"
+                          >
+                            <span className="flex items-center gap-2">
+                              <User size={15} className="text-[#b8860b]" /> Akun & E-Tiket Saya
+                            </span>
+                            <ChevronRight size={14} className="text-gray-400" />
+                          </Link>
+
+                          <Link
+                            href="/dompet-karsa"
+                            className="flex items-center justify-between w-full rounded-xl px-4 py-2.5 text-xs font-semibold text-[#173d2b] transition hover:bg-[#f8f3e8]"
+                          >
+                            <span className="flex items-center gap-2">
+                              <Wallet size={15} className="text-[#b8860b]" /> Dompet Karsa Poin
+                            </span>
+                            <ChevronRight size={14} className="text-gray-400" />
+                          </Link>
+
+                          <div className="h-px bg-gray-100 my-1" />
+                        </>
+                      )}
+
                       <button
                         onClick={async () => {
                           await signOut({ redirect: false });
                           window.location.href = "/login";
                         }}
-                        className="w-full rounded-lg px-4 py-2.5 text-left text-sm font-medium text-red-600 transition hover:bg-red-50 cursor-pointer"
+                        className="flex items-center gap-2 w-full rounded-xl px-4 py-2.5 text-xs font-bold text-red-600 transition hover:bg-red-50 cursor-pointer"
                       >
-                        Keluar
+                        <LogOut size={15} /> Keluar dari Akun
                       </button>
                     </div>
                   </div>
