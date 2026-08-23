@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Wallet, Award, ArrowUpRight, ArrowDownLeft, Ticket, Sparkles, Gift, Calendar, Building2 } from "lucide-react";
+import RedeemButton from "@/components/RedeemButton"; // Komponen tombol interaktif penukaran
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,7 @@ export default async function DompetKarsaPage() {
       totalPoints = dbUser.pointTransactions.reduce((acc, tx) => acc + tx.amount, 0);
     }
 
-    // Ambil event yang statusnya PUBLISHED secara real-time dari database untuk katalog penukaran event
+    // Ambil event yang statusnya PUBLISHED secara real-time dari database
     publishedEvents = await prisma.event.findMany({
       where: { status: "PUBLISHED" },
       orderBy: { startAt: "asc" },
@@ -42,7 +43,7 @@ export default async function DompetKarsaPage() {
     console.warn("Gagal terhubung ke database, menggunakan data cadangan.");
   }
 
-  // Katalog khusus untuk Cagar Budaya (Heritage) tetap tersedia
+  // Katalog khusus untuk Cagar Budaya (Heritage)
   const heritageRewards = [
     {
       id: "rw-1",
@@ -155,9 +156,9 @@ export default async function DompetKarsaPage() {
                 <Sparkles size={18} /> Cara Kerja Dompet Karsa
               </div>
               <ul className="space-y-3 text-xs text-gray-600 leading-relaxed">
-                <li className="flex gap-2"><span className="font-bold text-[#173d2b]">1.</span> Beli tiket cagar budaya atau event pilihan di Medan.</li>
-                <li className="flex gap-2"><span className="font-bold text-[#173d2b]">2.</span> Poin otomatis masuk setelah pembayaran terverifikasi.</li>
-                <li className="flex gap-2"><span className="font-bold text-[#173d2b]">3.</span> Tukar poin untuk mendapatkan e-tiket gratis tanpa biaya!</li>
+                <li className="flex gap-2"><span className="font-bold text-[#173d2b]">1.</span> Pilih tiket cagar budaya atau event pilihan di Medan.</li>
+                <li className="flex gap-2"><span className="font-bold text-[#173d2b]">2.</span> Klik tukar poin jika poin Anda mencukupi.</li>
+                <li className="flex gap-2"><span className="font-bold text-[#173d2b]">3.</span> E-tiket gratis langsung diterbitkan tanpa biaya tunai!</li>
               </ul>
             </div>
           </div>
@@ -171,32 +172,33 @@ export default async function DompetKarsaPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {heritageRewards.map((item) => {
-              const canRedeem = totalPoints >= item.pointsRequired;
-              return (
-                <div key={item.id} className="bg-white rounded-[30px] overflow-hidden shadow-sm border border-gray-100 flex flex-col justify-between group">
-                  <div>
-                    <div className="relative h-48 w-full overflow-hidden">
-                      <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                      <span className="absolute top-4 left-4 bg-[#173d2b] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                        {item.category}
-                      </span>
-                    </div>
-                    <div className="p-6 space-y-2">
-                      <h4 className="font-serif text-lg font-bold text-[#173d2b]">{item.title}</h4>
-                      <p className="text-xs font-bold text-[#b8860b] flex items-center gap-1.5">
-                        <Gift size={14} /> {item.pointsRequired} Poin Diperlukan
-                      </p>
-                    </div>
-                  </div>
-                  <div className="p-6 pt-0">
-                    <span className={`block w-full py-3 rounded-xl text-xs font-bold text-center transition shadow-sm ${canRedeem ? "bg-[#173d2b] text-white" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
-                      {canRedeem ? "Tukar Poin Sekarang" : "Poin Belum Cukup"}
+            {heritageRewards.map((item) => (
+              <div key={item.id} className="bg-white rounded-[30px] overflow-hidden shadow-sm border border-gray-100 flex flex-col justify-between group">
+                <div>
+                  <div className="relative h-48 w-full overflow-hidden">
+                    <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                    <span className="absolute top-4 left-4 bg-[#173d2b] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                      {item.category}
                     </span>
                   </div>
+                  <div className="p-6 space-y-2">
+                    <h4 className="font-serif text-lg font-bold text-[#173d2b]">{item.title}</h4>
+                    <p className="text-xs font-bold text-[#b8860b] flex items-center gap-1.5">
+                      <Gift size={14} /> {item.pointsRequired} Poin Diperlukan
+                    </p>
+                  </div>
                 </div>
-              );
-            })}
+                <div className="p-6 pt-0">
+                  <RedeemButton 
+                    itemId={item.id} 
+                    title={item.title} 
+                    pointsRequired={item.pointsRequired} 
+                    totalPoints={totalPoints} 
+                    type="HERITAGE" 
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -213,9 +215,7 @@ export default async function DompetKarsaPage() {
           {publishedEvents.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {publishedEvents.map((ev) => {
-                // Konversi harga event menjadi estimasi poin penukaran (misal: Rp 10.000 = 50 Poin, minimal 100 poin)
                 const pointsRequired = Math.max(100, Math.round(ev.price / 200));
-                const canRedeem = totalPoints >= pointsRequired;
 
                 return (
                   <div key={ev.id} className="bg-white rounded-[30px] overflow-hidden shadow-sm border border-gray-100 flex flex-col justify-between group">
@@ -233,14 +233,18 @@ export default async function DompetKarsaPage() {
                       <div className="p-6 space-y-2">
                         <h4 className="font-serif text-lg font-bold text-[#173d2b] line-clamp-1">{ev.title}</h4>
                         <p className="text-xs font-bold text-[#b8860b] flex items-center gap-1.5">
-                          <Gift size={14} /> {pointsRequired} Poin Diperlukan <span className="text-gray-400 font-normal">(Nilai tiket Rp {ev.price.toLocaleString("id-ID")})</span>
+                          <Gift size={14} /> {pointsRequired} Poin Diperlukan <span className="text-gray-400 font-normal">(Rp {ev.price.toLocaleString("id-ID")})</span>
                         </p>
                       </div>
                     </div>
                     <div className="p-6 pt-0">
-                      <span className={`block w-full py-3 rounded-xl text-xs font-bold text-center transition shadow-sm ${canRedeem ? "bg-[#173d2b] text-white" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
-                        {canRedeem ? "Tukar Tiket Event" : "Poin Belum Cukup"}
-                      </span>
+                      <RedeemButton 
+                        itemId={ev.id} 
+                        title={ev.title} 
+                        pointsRequired={pointsRequired} 
+                        totalPoints={totalPoints} 
+                        type="EVENT" 
+                      />
                     </div>
                   </div>
                 );
