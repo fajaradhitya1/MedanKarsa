@@ -26,6 +26,20 @@ const heritageItems = [
     image: "/assets/masjidraya/masjid.jpeg",
     link: "/heritage",
   },
+  {
+    name: "Rumah Tjong Yong Hian",
+    location: "Kesawan, Medan",
+    rating: "4.7",
+    image: "/assets/Taman_Tjong_Yong_Hian_di_Medan.jpg",
+    link: "/heritage",
+  },
+  {
+    name: "London Sumatra",
+    location: "Jl. Jend. Ahmad Yani No.2, Kesawan, Kec. Medan Bar., Kota Medan",
+    rating: "4.8",
+    image: "/assets/heritage/londonsumatra.jpeg",
+    link: "/heritage",
+  }
 ];
 
 // Data Kuliner Khas Medan

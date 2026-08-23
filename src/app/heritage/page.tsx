@@ -4,7 +4,6 @@ import HeritageGrid from "@/components/heritage/HeritageGrid";
 import Footer from "@/components/layout/Footer";
 
 export default function HeritagePage() {
-  // Langsung masukkan data di sini tanpa database
   const typedHeritage = [
     {
       id: "1",
@@ -61,6 +60,42 @@ export default function HeritagePage() {
       createdAt: new Date(),
       updatedAt: new Date(),
     },
+    {
+      id: "4",
+      name: "Gedung London Sumatra (Lonsum)",
+      slug: "gedung-london-sumatra",
+      description: "Gedung bergaya kolonial Inggris abad ke-19 yang terkenal dengan lift kuno pertama di Medan.",
+      history: "Gedung Kantor PT London Sumatra Indonesia Tbk ini dibangun pada tahun 1906 dan menjadi pusat perdagangan penting di era kolonial.",
+      coverImage: "/assets/lonsum/cover.jpeg",
+      address: "Jl. Jend. Ahmad Yani No.2, Kesawan, Medan",
+      images: [
+        "/assets/lonsum/detail1.jpeg",
+        "/assets/lonsum/detail2.jpeg"
+      ],
+      latitude: 3.5915,
+      longitude: 98.6772,
+      category: "ARSITEKTUR" as const,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: "5",
+      name: "Masjid Raya Al-Mashun",
+      slug: "masjid-raya-al-mashun",
+      description: "Masjid Raya Medan yang megah dengan arsitektur perpaduan gaya Maroko, Eropa, dan Melayu.",
+      history: "Dibangun pada tahun 1906 oleh Sultan Ma'mun Al Rashid Perkasa Alam, masjid ini menjadi lambang keagungan Kesultanan Deli.",
+      coverImage: "/assets/masjidraya/masjid.jpeg",
+      address: "Jl. Sisingamangaraja No.74c, Mesjid, Medan",
+      images: [
+        "/assets/masjidraya/interior.jpeg",
+        "/assets/masjidraya/halaman.jpeg"
+      ],
+      latitude: 3.5689,
+      longitude: 98.6861,
+      category: "ARSITEKTUR" as const, // Diubah ke kategori valid ("ARSITEKTUR" atau "SEJARAH")
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
   ];
 
   return (
@@ -80,7 +115,7 @@ export default function HeritagePage() {
                   Eksplorasi Warisan
                 </span>
                 <h2 className="text-3xl font-serif font-bold text-[#173d2b] mt-1">
-                  Jelajah Cagar Budaya Medan
+                  Jelajahi Cagar Budaya Medan
                 </h2>
               </div>
               <p className="text-sm text-[#173d2b]/70 mt-2 sm:mt-0 font-sans">
