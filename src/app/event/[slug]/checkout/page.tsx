@@ -106,14 +106,19 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       if (response.ok && data.token) {
         window.snap.pay(data.token, {
           onSuccess: function (result: any) {
-            alert("Pembayaran Berhasil! E-Tiket otomatis dikirim ke Gmail Anda.");
-            window.location.href = `/event/${slug}`;
+            // Ambil orderId dari respons Midtrans atau data backend
+            const orderId = result.order_id || data.orderId || `MDK-${Date.now()}`;
+            
+            // Redirect langsung ke halaman E-Tiket Sukses Event
+            window.location.href = `/event/ticket/success?orderId=${orderId}`;
           },
           onPending: function (result: any) {
             alert("Menunggu pembayaran Anda diselesaikan.");
+            setIsSubmitting(false);
           },
           onError: function (result: any) {
             alert("Pembayaran gagal atau dibatalkan.");
+            setIsSubmitting(false);
           },
           onClose: function () {
             setIsSubmitting(false);

@@ -27,6 +27,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, message: "Poin Anda tidak mencukupi untuk penukaran ini!" }, { status: 400 });
     }
 
+    // Tentukan eventId yang sesuai berdasarkan tipe penukaran
+    let targetEventId = "";
+
+    if (type === "EVENT") {
+      // Pastikan event yang dipilih benar-benar ada di database berdasarkan itemId
+      const selectedEvent = await prisma.event.findUnique({
+        where: { id: itemId },
+      });
+      if (!selectedEvent) {
+        return NextResponse.json({ success: false, message: "Event yang dipilih tidak ditemukan." }, { status: 404 });
+      }
+      targetEventId = selectedEvent.id;
+    } else {
+      // Untuk kategori Heritage, ambil event referensi pertama atau buat event khusus heritage jika ada
+      let defaultEvent = await prisma.event.findFirst();
+      if (!defaultEvent) {
+        return NextResponse.json({ success: false, message: "Belum ada referensi event/heritage di database." }, { status: 400 });
+      }
+      targetEventId = defaultEvent.id;
+    }
+
     // Generate kode unik tiket penukaran reward
     const redeemOrderCode = `REDEEM-${type}-${Date.now()}`;
 
@@ -40,13 +61,7 @@ export async function POST(req: Request) {
       },
     });
 
-    // 2. Terbitkan E-Tiket otomatis di database dengan status SUCCESS (gratis karena ditukar poin)
-    // Cari event atau heritage acak/terkait untuk diikat ke tabel Ticket
-    let targetEvent = await prisma.event.findFirst();
-    if (!targetEvent) {
-      return NextResponse.json({ success: false, message: "Event referensi tidak ditemukan." }, { status: 400 });
-    }
-
+    // 2. Terbitkan E-Tiket otomatis dengan menghubungkannya ke eventId yang tepat
     const newTicket = await prisma.ticket.create({
       data: {
         ticketCode: redeemOrderCode,
@@ -55,7 +70,7 @@ export async function POST(req: Request) {
         buyerPhone: "-",
         status: "SUCCESS",
         paymentType: "KARSA_POINTS",
-        eventId: targetEvent.id,
+        eventId: targetEventId,
       },
     });
 

@@ -109,7 +109,12 @@ export default function RedeemButton({ itemId, title, pointsRequired, totalPoint
             <button
               onClick={() => {
                 setShowSuccessModal(false);
-                router.push(`/heritage/ticket/success?orderId=${successOrderId}`);
+                // Arahkan dinamis berdasarkan tipe: jika EVENT ke /event/ticket/success, jika HERITAGE ke /heritage/ticket/success
+                const targetRoute = type === "EVENT" 
+                  ? `/event/ticket/success?orderId=${successOrderId}` 
+                  : `/heritage/ticket/success?orderId=${successOrderId}`;
+                
+                router.push(targetRoute);
                 router.refresh();
               }}
               className="w-full py-3.5 rounded-2xl bg-[#173d2b] text-white text-xs font-bold tracking-wider uppercase shadow-md transition hover:bg-[#0f291d]"
