@@ -65,7 +65,7 @@ const legendaryCulinaryList = [
     description: "Sentra durian paling populer di Kota Medan dengan garansi rasa manis legit beralkohol khas durian lokal.",
     address: "Jl. K.H. Wahid Hasyim No.30-32, Babura",
     rating: "4.9",
-    image: "https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=600&auto=format&fit=crop",
+    image: "/assets/heritage/ucok.jpeg",
     mapsUrl: "https://www.google.com/maps/search/?api=1&query=Ucok+Durian+Medan",
   },
   {
