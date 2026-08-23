@@ -2,13 +2,14 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Wallet, Award, ArrowUpRight, ArrowDownLeft, Ticket, Sparkles, Gift } from "lucide-react";
+import { Wallet, Award, ArrowUpRight, ArrowDownLeft, Ticket, Sparkles, Gift, Calendar, Building2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default async function DompetKarsaPage() {
   let totalPoints = 0;
   let pointHistory: Array<{ id: string; description: string; amount: number; createdAt: Date }> = [];
+  let publishedEvents: Array<{ id: string; title: string; slug: string; coverImage: string | null; price: number; category: string }> = [];
 
   try {
     const session = await auth();
@@ -28,14 +29,21 @@ export default async function DompetKarsaPage() {
 
     if (dbUser) {
       pointHistory = dbUser.pointTransactions;
-      // Hitung total poin secara real-time dari seluruh transaksi (masuk - keluar)
       totalPoints = dbUser.pointTransactions.reduce((acc, tx) => acc + tx.amount, 0);
     }
+
+    // Ambil event yang statusnya PUBLISHED secara real-time dari database untuk katalog penukaran event
+    publishedEvents = await prisma.event.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: { startAt: "asc" },
+      take: 6,
+    });
   } catch (err) {
-    console.warn("Gagal terhubung ke database, menggunakan data default.");
+    console.warn("Gagal terhubung ke database, menggunakan data cadangan.");
   }
 
-  const rewardCatalog = [
+  // Katalog khusus untuk Cagar Budaya (Heritage) tetap tersedia
+  const heritageRewards = [
     {
       id: "rw-1",
       title: "Tiket Masuk Gratis Rumah Tjong A Fie",
@@ -50,19 +58,13 @@ export default async function DompetKarsaPage() {
       category: "Heritage",
       image: "https://images.unsplash.com/photo-1596401340653-485303c72b8d?q=80&w=600&auto=format&fit=crop",
     },
-    {
-      id: "rw-3",
-      title: "Tiket Event Budaya Medan",
-      pointsRequired: 350,
-      category: "Event Budaya",
-      image: "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=600&auto=format&fit=crop",
-    },
   ];
 
   return (
     <main className="min-h-screen bg-[#f8f3e8] text-[#173d2b] pb-20">
-      <div className="mx-auto max-w-5xl px-5 py-8 lg:px-8 space-y-8">
+      <div className="mx-auto max-w-5xl px-5 py-8 lg:px-8 space-y-10">
         
+        {/* Header Title */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <span className="bg-[#b8860b]/20 text-[#b8860b] text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider">
@@ -108,7 +110,7 @@ export default async function DompetKarsaPage() {
           </div>
         </div>
 
-        {/* RIWAYAT TRANSAKSI REAL-TIME */}
+        {/* RIWAYAT & CARA KERJA */}
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-[30px] p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6">
@@ -153,25 +155,23 @@ export default async function DompetKarsaPage() {
                 <Sparkles size={18} /> Cara Kerja Dompet Karsa
               </div>
               <ul className="space-y-3 text-xs text-gray-600 leading-relaxed">
-                <li className="flex gap-2"><span className="font-bold text-[#173d2b]">1.</span> Beli tiket masuk cagar budaya atau event di Medan.</li>
+                <li className="flex gap-2"><span className="font-bold text-[#173d2b]">1.</span> Beli tiket cagar budaya atau event pilihan di Medan.</li>
                 <li className="flex gap-2"><span className="font-bold text-[#173d2b]">2.</span> Poin otomatis masuk setelah pembayaran terverifikasi.</li>
-                <li className="flex gap-2"><span className="font-bold text-[#173d2b]">3.</span> Tukar poin untuk mendapatkan e-tiket gratis!</li>
+                <li className="flex gap-2"><span className="font-bold text-[#173d2b]">3.</span> Tukar poin untuk mendapatkan e-tiket gratis tanpa biaya!</li>
               </ul>
             </div>
           </div>
         </div>
 
-        {/* KATALOG PENUKARAN */}
-        <section className="space-y-6 pt-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-serif text-2xl font-bold text-[#173d2b]">Katalog Penukaran Tiket</h3>
-              <p className="text-xs text-gray-500 mt-0.5">Tukarkan poin Anda dengan tiket wisata dan event pilihan.</p>
-            </div>
+        {/* 1. KATALOG TIKET MASUK HERITAGE */}
+        <section className="space-y-6 pt-2">
+          <div className="flex items-center gap-2">
+            <Building2 size={20} className="text-[#b8860b]" />
+            <h3 className="font-serif text-2xl font-bold text-[#173d2b]">Katalog Tiket Cagar Budaya (Heritage)</h3>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {rewardCatalog.map((item) => {
+            {heritageRewards.map((item) => {
               const canRedeem = totalPoints >= item.pointsRequired;
               return (
                 <div key={item.id} className="bg-white rounded-[30px] overflow-hidden shadow-sm border border-gray-100 flex flex-col justify-between group">
@@ -198,6 +198,59 @@ export default async function DompetKarsaPage() {
               );
             })}
           </div>
+        </section>
+
+        {/* 2. KATALOG EVENT TERBARU (REAL-TIME DARI DATABASE) */}
+        <section className="space-y-6 pt-4">
+          <div className="flex items-center gap-2">
+            <Calendar size={20} className="text-[#b8860b]" />
+            <div>
+              <h3 className="font-serif text-2xl font-bold text-[#173d2b]">Katalog Tiket Event Budaya & Terbaru</h3>
+              <p className="text-xs text-gray-500 mt-0.5">Event yang diajukan komunitas dan disetujui untuk ditukar dengan poin.</p>
+            </div>
+          </div>
+
+          {publishedEvents.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {publishedEvents.map((ev) => {
+                // Konversi harga event menjadi estimasi poin penukaran (misal: Rp 10.000 = 50 Poin, minimal 100 poin)
+                const pointsRequired = Math.max(100, Math.round(ev.price / 200));
+                const canRedeem = totalPoints >= pointsRequired;
+
+                return (
+                  <div key={ev.id} className="bg-white rounded-[30px] overflow-hidden shadow-sm border border-gray-100 flex flex-col justify-between group">
+                    <div>
+                      <div className="relative h-48 w-full overflow-hidden bg-gray-100">
+                        <img 
+                          src={ev.coverImage || "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=600&auto=format&fit=crop"} 
+                          alt={ev.title} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
+                        />
+                        <span className="absolute top-4 left-4 bg-[#b8860b] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                          {ev.category || "Event"}
+                        </span>
+                      </div>
+                      <div className="p-6 space-y-2">
+                        <h4 className="font-serif text-lg font-bold text-[#173d2b] line-clamp-1">{ev.title}</h4>
+                        <p className="text-xs font-bold text-[#b8860b] flex items-center gap-1.5">
+                          <Gift size={14} /> {pointsRequired} Poin Diperlukan <span className="text-gray-400 font-normal">(Nilai tiket Rp {ev.price.toLocaleString("id-ID")})</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="p-6 pt-0">
+                      <span className={`block w-full py-3 rounded-xl text-xs font-bold text-center transition shadow-sm ${canRedeem ? "bg-[#173d2b] text-white" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
+                        {canRedeem ? "Tukar Tiket Event" : "Poin Belum Cukup"}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="bg-white rounded-[30px] p-8 text-center border border-gray-100 text-gray-400 text-xs">
+              Belum ada event terbaru yang dipublikasikan untuk ditukar poin saat ini.
+            </div>
+          )}
         </section>
 
       </div>
