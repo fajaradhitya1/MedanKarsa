@@ -11,7 +11,7 @@ export default function DashboardHero() {
         <div className="relative overflow-hidden rounded-[36px] bg-gradient-to-r from-[#eaf2ed] via-[#d6e5dd] to-[#eaf2ed] p-8 sm:p-14 lg:p-20 border border-[#cbe0d4] shadow-xs">
           
           {/* Latar Belakang Landmark Medan */}
-          <div className="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1584646098378-0874589d76b1?q=80&w=1600&auto=format&fit=crop')] bg-cover bg-center pointer-events-none" />
+          <div className="absolute inset-0 opacity-20 bg-[url('/assets/Pitchdeck/breadcrumb-bg.jpg')] bg-cover bg-center pointer-events-none" />
 
 
           

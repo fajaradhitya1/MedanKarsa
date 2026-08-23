@@ -34,14 +34,14 @@ const culinaryItems = [
     name: "Bika Ambon Zulaikha",
     location: "Jl. Mojopahit No.62 A, Petisah Hulu",
     rating: "4.9",
-    image: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?q=80&w=600&auto=format&fit=crop",
+    image: "/assets/kuliner/bikaambon.jpeg",
     link: "/umkm",
   },
   {
     name: "Soto Kesawan",
     location: "Jl. Jend. Ahmad Yani (Kawasan Kesawan)",
     rating: "4.8",
-    image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?q=80&w=600&auto=format&fit=crop",
+    image: "/assets/kuliner/soto.jpeg",
     link: "/umkm",
   },
   {
