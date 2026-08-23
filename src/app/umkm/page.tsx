@@ -99,7 +99,7 @@ export default async function UmkmPage() {
               <h2 className="font-serif text-2xl font-bold text-[#173d2b]">Jelajahi Lokasi Kuliner & UMKM di Medan</h2>
             </div>
             <div className="overflow-hidden rounded-[28px] border border-[#e8dfcf] shadow-sm">
-              <UmkmMapSection markers={mapMarkers} />
+              <UmkmMapSection umkms={mapMarkers} />
             </div>
           </div>
         </div>
