@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Home, Map, User, Calendar, Store, Wallet, LogOut, ChevronRight, Ticket } from "lucide-react";
+import { Bell, Home, Map, User, Calendar, Store, Wallet, LogOut, ChevronRight, Menu, X } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
 
@@ -14,12 +14,13 @@ interface NotificationItem {
   createdAt: string;
 }
 
-// Menyesuaikan ikon navigasi agar lebih spesifik dan sesuai konteks
+// Menambahkan Dompet Karsa ke dalam jajaran menu utama
 const userNavItems = [
   { label: "Beranda", href: "/dashboard", icon: Home },
   { label: "Heritage", href: "/heritage", icon: Map },
   { label: "Event", href: "/event", icon: Calendar },
   { label: "UMKM", href: "/umkm", icon: Store },
+  { label: "Dompet Karsa", href: "/dompet-karsa", icon: Wallet },
 ];
 
 const adminNavItems = [
@@ -33,6 +34,7 @@ export default function Navbar() {
   
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (session?.user) {
@@ -110,7 +112,7 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* USER */}
+        {/* USER & HAMBURGER MOBILE */}
         <div className="flex items-center gap-3">
           {session ? (
             <>
@@ -159,8 +161,8 @@ export default function Navbar() {
                 </div>
               )}
 
-              {/* ACCOUNT PROFILE & DROPDOWN (Menuju ke /akun saat diklik atau di-hover) */}
-              <div className="relative">
+              {/* ACCOUNT PROFILE & DROPDOWN (Menuju ke /akun) */}
+              <div className="relative hidden sm:block">
                 <div className="group relative inline-block">
                   <Link
                     href={isAdmin ? "/admin/events" : "/akun"}
@@ -178,7 +180,7 @@ export default function Navbar() {
                       </div>
                     )}
 
-                    <span className="hidden text-sm font-semibold text-[#173d2b] sm:block">
+                    <span className="text-sm font-semibold text-[#173d2b]">
                       {isAdmin ? "Admin" : `Hai, ${session.user?.name?.split(" ")[0] || "User"}!`}
                     </span>
                   </Link>
@@ -234,33 +236,77 @@ export default function Navbar() {
               Masuk
             </Link>
           )}
+
+          {/* TOMBOL BURGER MENU MOBILE */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden rounded-full p-2.5 text-[#173d2b] bg-white border border-[#e8dfcf] shadow-sm"
+            aria-label="Menu"
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
       </div>
 
-      {/* MOBILE NAV */}
-      <div className="border-t border-[#e8dfcf] px-4 py-2 md:hidden">
-        <nav className="flex items-center justify-between gap-1 overflow-x-auto">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = isItemActive(item.href);
+      {/* MOBILE DRAWER / MENU */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-[#e8dfcf] bg-white px-5 py-5 space-y-4 shadow-xl">
+          {session && (
+            <Link
+              href="/akun"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-2xl bg-[#f8f3e8] border border-[#e8dfcf]"
+            >
+              {session.user?.image ? (
+                <img src={session.user.image} alt="Profile" className="h-10 w-10 rounded-full object-cover" />
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#dce8dc] text-[#173d2b]">
+                  <User size={18} />
+                </div>
+              )}
+              <div>
+                <p className="font-serif font-bold text-[#173d2b] text-sm">{session.user?.name || "Akun Saya"}</p>
+                <p className="text-xs text-gray-500">Lihat Profil, E-Tiket & Poin</p>
+              </div>
+            </Link>
+          )}
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex min-w-fit items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition ${
-                  isActive
-                    ? "bg-[#173d2b] text-white shadow-sm"
-                    : "text-[#667068] hover:bg-[#eee8dc] hover:text-[#173d2b]"
-                }`}
-              >
-                <Icon size={15} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
+          <nav className="flex flex-col space-y-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = isItemActive(item.href);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                    isActive
+                      ? "bg-[#173d2b] text-white shadow-sm"
+                      : "text-[#667068] hover:bg-[#eee8dc] hover:text-[#173d2b]"
+                  }`}
+                >
+                  <Icon size={18} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {session && (
+            <button
+              onClick={async () => {
+                await signOut({ redirect: false });
+                window.location.href = "/login";
+              }}
+              className="flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-xs font-bold text-red-600 bg-red-50 transition hover:bg-red-100 cursor-pointer"
+            >
+              <LogOut size={16} /> Keluar dari Akun
+            </button>
+          )}
+        </div>
+      )}
     </header>
   );
 }
