@@ -1,13 +1,43 @@
 import { Trophy } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 
-const history = [
-  ["Scan Heritage - Istana Maimun", "+20"],
-  ["Pembelian UMKM - Kopi Tiam", "+30"],
-  ["Hadiri Event - Heritage Night", "+50"],
-  ["Laporan Kondisi Jalan", "+30"],
-];
+export default async function KarsaPointCard() {
+  // Ambil sesi pengguna yang sedang login
+  let currentPoints = 0;
+  let pointHistory: Array<{ id: string; description: string; amount: number; createdAt: Date }> = [];
 
-export default function KarsaPointCard() {
+  try {
+    const session = await auth();
+    
+    if (session?.user?.email) {
+      // Ambil data user beserta poin dan riwayat transaksinya secara real-time dari database
+      const dbUser = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        include: {
+          pointTransactions: {
+            orderBy: { createdAt: "desc" },
+            take: 4, // Ambil 4 aktivitas terbaru
+          },
+        },
+      });
+
+      if (dbUser) {
+        currentPoints = (dbUser as any).karsaPoint || (dbUser as any).points || 0;
+        pointHistory = dbUser.pointTransactions;
+      }
+    }
+  } catch (err) {
+    console.warn("Gagal mengambil data poin real-time, menggunakan data kosong.");
+  }
+
+  // Fallback jika belum ada transaksi di database
+  const displayHistory = pointHistory.length > 0 
+    ? pointHistory.map(tx => [tx.description, `${tx.amount > 0 ? "+" : ""}${tx.amount}`])
+    : [
+        ["Belum ada aktivitas poin", "0"],
+      ];
+
   return (
     <section className="mt-16 grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
       {/* POINT */}
@@ -19,7 +49,7 @@ export default function KarsaPointCard() {
             </p>
 
             <h2 className="mt-3 font-serif text-5xl font-bold text-[#173d2b]">
-              2.450
+              {currentPoints.toLocaleString("id-ID")}
             </h2>
 
             <p className="mt-1 text-sm font-medium text-[#59451e]">
@@ -34,13 +64,13 @@ export default function KarsaPointCard() {
               </p>
 
               <p className="font-bold text-[#173d2b]">
-                Explorer
+                {currentPoints >= 1000 ? "Master Explorer 👑" : "Explorer 🌟"}
               </p>
             </div>
 
             <a
-              href="/wallet"
-              className="rounded-xl bg-[#173d2b] px-5 py-3 text-xs font-bold text-white"
+              href="/dompet-karsa"
+              className="rounded-xl bg-[#173d2b] px-5 py-3 text-xs font-bold text-white transition hover:bg-[#0f291d]"
             >
               Tukar Reward
             </a>
@@ -68,22 +98,22 @@ export default function KarsaPointCard() {
         </div>
 
         <div className="mt-5 space-y-4">
-          {history.map(([title, point]) => (
+          {displayHistory.map(([title, point], index) => (
             <div
-              key={title}
-              className="flex items-center justify-between border-b border-[#eee9df] pb-3"
+              key={index}
+              className="flex items-center justify-between border-b border-[#eee9df] pb-3 last:border-none"
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f3e8cd]">
                   <Trophy size={15} />
                 </div>
 
-                <span className="text-xs font-medium">
+                <span className="text-xs font-medium text-gray-700">
                   {title}
                 </span>
               </div>
 
-              <span className="text-xs font-bold text-[#29804d]">
+              <span className={`text-xs font-bold ${point.startsWith("-") ? "text-amber-600" : "text-[#29804d]"}`}>
                 {point}
               </span>
             </div>

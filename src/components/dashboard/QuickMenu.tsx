@@ -33,7 +33,7 @@ const menus = [
   {
     icon: Wallet,
     label: "Karsa",
-    href: "/wallet",
+    href: "/dompet-karsa",
   },
   {
     icon: User,
