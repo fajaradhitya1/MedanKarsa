@@ -10,8 +10,13 @@ export default function DashboardHero() {
         {/* HERO CARD UTAMA - FULL KIRI KANAN */}
         <div className="relative overflow-hidden rounded-[36px] bg-gradient-to-r from-[#eaf2ed] via-[#d6e5dd] to-[#eaf2ed] p-8 sm:p-14 lg:p-20 border border-[#cbe0d4] shadow-xs">
           
-          {/* Latar Belakang Landmark Medan */}
-          <div className="absolute inset-0 opacity-20 bg-[url('/assets/Pitchdeck/breadcrumb-bg.jpg')] bg-cover bg-center pointer-events-none" />
+          <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
+  <img 
+    src="/assets/Pitchdeck/breadcrumb-bg.jpg" 
+    alt="Background Landmark" 
+    className="w-full h-full object-cover object-center"
+  />
+</div>
 
 
           
