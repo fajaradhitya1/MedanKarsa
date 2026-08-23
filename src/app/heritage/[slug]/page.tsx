@@ -21,7 +21,7 @@ export default async function HeritageDetailPage({ params }: Props) {
       slug: "gedung-london-sumatra",
       description: "Gedung bergaya kolonial Inggris abad ke-19 yang terkenal dengan lift kuno pertama di Medan.",
       history: "Gedung Kantor PT London Sumatra Indonesia Tbk ini dibangun pada tahun 1906 dan menjadi pusat perdagangan penting di era kolonial.",
-      coverImage: "/assets/lonsum/cover.jpeg",
+      coverImage: "/assets/heritage/londonsumatra_cover.jpeg",
       address: "Jl. Jend. Ahmad Yani No.2, Kesawan, Medan",
       images: ["/assets/lonsum/detail1.jpeg", "/assets/lonsum/detail2.jpeg"],
       category: "ARSITEKTUR",
