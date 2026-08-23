@@ -3,181 +3,214 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
-import { CheckCircle2, Clock, ArrowLeft, Download, Send } from "lucide-react";
+import { CheckCircle2, Download, Mail, ArrowLeft, Ticket, MapPin, Calendar, Sparkles, User, CreditCard, Phone, Mail as MailIcon } from "lucide-react";
 
-function TicketSuccessContent() {
+function EventTicketContent() {
   const searchParams = useSearchParams();
-  const orderId = searchParams.get("orderId") || "MK-TICKET-DEMO";
+  const orderId = searchParams.get("orderId");
 
-  const [ticket, setTicket] = useState<any>(null);
+  const [ticketData, setTicketData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   useEffect(() => {
-    // Ambil data tiket atau buat otomatis via API backend
-    fetch(`/api/heritage/verify-payment`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId, paymentType: "qris" }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.ticket) {
-          setTicket(data.ticket);
-        } else {
-          // Fallback data jika respons API belum siap
-          setTicket({
-            ticketCode: orderId,
-            buyerName: "Pengunjung Medan Karsa",
-            buyerPhone: "081234567890",
-            buyerEmail: "visitor@medankarsa.com",
-            status: "SUCCESS",
-            createdAt: new Date().toISOString(),
-          });
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Gagal memuat detail tiket:", err);
-        setTicket({
-          ticketCode: orderId,
-          buyerName: "Pengunjung Medan Karsa",
-          buyerPhone: "081234567890",
-          buyerEmail: "visitor@medankarsa.com",
-          status: "SUCCESS",
-          createdAt: new Date().toISOString(),
+    if (orderId) {
+      fetch(`/api/ticket/detail?orderId=${orderId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setTicketData(data.ticket);
+          }
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error("Gagal memuat tiket event", err);
+          setLoading(false);
         });
-        setLoading(false);
-      });
+    } else {
+      setLoading(false);
+    }
   }, [orderId]);
+
+  const handleDownloadTicket = () => {
+    window.print();
+  };
+
+  const handleSendEmail = async () => {
+    setEmailSending(true);
+    try {
+      const res = await fetch("/api/ticket/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Gagal mengirim email");
+
+      setEmailSent(true);
+      alert("E-tiket event berhasil dikirim ke Gmail Anda!");
+    } catch (err: any) {
+      alert(err.message || "Terjadi kesalahan saat mengirim email.");
+    } finally {
+      setEmailSending(false);
+    }
+  };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f8f3e8] flex items-center justify-center text-[#173d2b]">
-        <p className="font-serif text-lg animate-pulse">Memuat E-Tiket Anda...</p>
+      <div className="min-h-screen bg-[#f8f3e8] flex items-center justify-center text-[#173d2b] font-serif">
+        Memuat E-Tiket Event Anda...
       </div>
     );
   }
 
-  const expiresDate = new Date(ticket?.createdAt || Date.now());
-  expiresDate.setDate(expiresDate.getDate() + 1);
+  const isPointRedeem = ticketData?.paymentType === "KARSA_POINTS" || orderId?.startsWith("REDEEM");
+  const eventInfo = ticketData?.event;
 
   return (
-    <main className="min-h-screen bg-[#f8f3e8] text-[#173d2b] py-12 px-5">
-      <div className="mx-auto max-w-xl">
-        {/* Tombol Navigasi - Disembunyikan saat di-print */}
-        <div className="print:hidden mb-6">
-          <Link href="/heritage" className="inline-flex items-center gap-2 text-sm font-semibold text-[#667068] hover:text-[#173d2b]">
-            <ArrowLeft size={17} /> Kembali ke Beranda Heritage
+    <main className="min-h-screen bg-[#f8f3e8] text-[#173d2b] py-10 px-5">
+      <div className="mx-auto max-w-2xl space-y-6">
+        
+        {/* Tombol Navigasi (Hilang saat diprint) */}
+        <div className="flex justify-between items-center print:hidden">
+          <Link href="/dompet-karsa" className="inline-flex items-center gap-2 text-xs font-bold text-[#173d2b] hover:underline">
+            <ArrowLeft size={16} /> Kembali ke Dompet Karsa
           </Link>
+          <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+            {isPointRedeem ? "⭐ Ditukar dengan Karsa Poin" : "✅ Pembayaran Lunas"}
+          </span>
         </div>
 
-        {/* E-TICKET CARD */}
-        <div className="bg-white rounded-[32px] shadow-lg border border-[#173d2b]/10 overflow-hidden relative">
+        {/* KARTU E-TIKET UTAMA */}
+        <div className="bg-white rounded-[32px] overflow-hidden shadow-xl border border-gray-100 print:shadow-none print:border-none">
           
-          {/* Header Tiket */}
-          <div className="bg-[#173d2b] text-white p-6 sm:p-8 text-center relative">
-            <div className="absolute top-4 right-4 bg-[#b8860b] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-              Lunas & Resmi
+          {/* Header Banner */}
+          <div className="bg-linear-to-br from-[#173d2b] to-[#0f291d] text-white p-8 text-center space-y-2 relative overflow-hidden">
+            <div className="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+              <Ticket size={200} />
             </div>
-            <CheckCircle2 className="mx-auto text-[#f1c76e] mb-2" size={42} />
-            <h1 className="font-serif text-2xl font-bold">E-Tiket Masuk Cagar Budaya</h1>
-            <p className="text-xs text-gray-300 mt-1">Tunjukkan QR Code ini kepada petugas di lokasi wisata.</p>
+            <span className="text-[#f1c76e] text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-1.5">
+              {isPointRedeem && <Sparkles size={14} />} E-Tiket Resmi Event MedanKarsa
+            </span>
+            <h1 className="font-serif text-2xl sm:text-4xl font-bold">
+              {eventInfo?.title || "Tiket Masuk Event Budaya"}
+            </h1>
+            <p className="text-xs text-gray-300 font-mono pt-1">ID TICKET: {ticketData?.ticketCode || orderId}</p>
           </div>
 
-          {/* Body Tiket */}
-          <div className="p-6 sm:p-8 space-y-6">
+          {/* DETAIL KONTEN LENGKAP */}
+          <div className="p-8 space-y-8">
             
-            {/* Info Destinasi & Order ID */}
-            <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-              <div>
-                <p className="text-xs text-gray-400 uppercase tracking-wider">Destinasi</p>
-                <p className="font-serif text-lg font-bold text-[#173d2b]">Rumah Tjong A Fie</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-gray-400 uppercase tracking-wider">Order ID</p>
-                <p className="text-xs font-mono font-bold text-gray-600 max-w-[180px] truncate">{ticket?.ticketCode || orderId}</p>
+            {/* Bagian 1: Informasi Acara / Event */}
+            <div className="space-y-4">
+              <h3 className="font-serif text-lg font-bold text-[#173d2b] border-b pb-2">Informasi Acara</h3>
+              <div className="bg-[#fcf9f2] p-5 rounded-2xl border border-[#e2d8c5]/40 space-y-3 text-xs sm:text-sm">
+                <div className="flex items-start gap-3">
+                  <MapPin size={18} className="text-[#b8860b] shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-gray-400 font-semibold uppercase text-[10px]">Lokasi / Alamat Acara</p>
+                    <p className="font-bold text-[#173d2b] mt-0.5">{eventInfo?.location || "Kota Medan, Sumatera Utara"}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <Calendar size={18} className="text-[#b8860b] shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-gray-400 font-semibold uppercase text-[10px]">Waktu Pelaksanaan</p>
+                    <p className="font-bold text-[#173d2b] mt-0.5">
+                      {eventInfo?.startAt ? new Date(eventInfo.startAt).toLocaleString("id-ID", { dateStyle: "full", timeStyle: "short" }) : "Sesuai Jadwal Resmi"}
+                    </p>
+                  </div>
+                </div>
+
+                {eventInfo?.description && (
+                  <p className="text-xs text-gray-600 pt-2 border-t border-gray-200/60 leading-relaxed">
+                    {eventInfo.description}
+                  </p>
+                )}
               </div>
             </div>
 
-            {/* QR Code */}
-            <div className="bg-[#f5f0e6] rounded-2xl p-6 text-center space-y-3">
-              <div className="inline-block bg-white p-4 rounded-xl shadow-sm border border-[#173d2b]/10">
-                <div className="w-36 h-36 bg-white flex flex-col items-center justify-center rounded-lg mx-auto">
-                  <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${ticket?.ticketCode || orderId}`} 
-                    alt="QR Code Tiket" 
-                    className="w-full h-full object-contain"
-                  />
+            {/* Bagian 2: Data Diri Pemegang Tiket */}
+            <div className="space-y-4">
+              <h3 className="font-serif text-lg font-bold text-[#173d2b] border-b pb-2">Data Pemegang Tiket</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                <div className="flex items-center gap-3">
+                  <User size={16} className="text-[#b8860b]" />
+                  <div>
+                    <p className="text-[10px] text-gray-400 uppercase font-semibold">Nama Lengkap</p>
+                    <p className="font-bold text-[#173d2b]">{ticketData?.buyerName || "Pengunjung MedanKarsa"}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <MailIcon size={16} className="text-[#b8860b]" />
+                  <div>
+                    <p className="text-[10px] text-gray-400 uppercase font-semibold">Email Terdaftar</p>
+                    <p className="font-bold text-[#173d2b]">{ticketData?.buyerEmail || "-"}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Phone size={16} className="text-[#b8860b]" />
+                  <div>
+                    <p className="text-[10px] text-gray-400 uppercase font-semibold">No. Telepon / WhatsApp</p>
+                    <p className="font-bold text-[#173d2b]">{ticketData?.buyerPhone || "-"}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <CreditCard size={16} className="text-[#b8860b]" />
+                  <div>
+                    <p className="text-[10px] text-gray-400 uppercase font-semibold">Metode Transaksi</p>
+                    <p className="font-bold text-[#b8860b] uppercase">
+                      {isPointRedeem ? "⭐ Penukaran Karsa Poin" : ticketData?.paymentType || "QRIS / Transfer"}
+                    </p>
+                  </div>
                 </div>
               </div>
-              <p className="text-[11px] text-gray-500 font-mono">Token: {ticket?.ticketCode || orderId}-VERIFIED</p>
             </div>
 
-            {/* Detail Pemilik Tiket */}
-            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-2xl text-sm">
-              <div>
-                <p className="text-xs text-gray-400">Nama Pengunjung</p>
-                <p className="font-semibold text-[#173d2b]">{ticket?.buyerName || "Pengunjung"}</p>
+            {/* Bagian 3: Barcode / QR Scan */}
+            <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-2xl bg-[#faf7f2] space-y-2">
+              <div className="font-mono text-2xl font-bold tracking-widest text-[#173d2b]">
+                ||| | |||| || ||| || |||| |||
               </div>
-              <div>
-                <p className="text-xs text-gray-400">No. WhatsApp</p>
-                <p className="font-semibold text-[#173d2b]">{ticket?.buyerPhone || "-"}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">Email Akun</p>
-                <p className="font-semibold text-[#173d2b] text-xs truncate">{ticket?.buyerEmail || "-"}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">Status</p>
-                <p className="font-semibold text-emerald-600 uppercase text-xs">{ticket?.status || "SUCCESS"}</p>
-              </div>
-            </div>
-
-            {/* Masa Berlaku */}
-            <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 p-3.5 rounded-xl text-amber-900 text-xs">
-              <Clock size={20} className="shrink-0 text-amber-600" />
-              <div>
-                <span className="font-bold">Masa Berlaku Tiket:</span> Berakhir pada{" "}
-                {expiresDate.toLocaleDateString("id-ID", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}{" "}
-                pukul 23:59 WIB.
-              </div>
-            </div>
-
-            {/* Tombol Aksi - Sembunyikan saat di-print */}
-            <div className="grid grid-cols-2 gap-3 pt-2 print:hidden">
-              <button
-                onClick={() => window.print()}
-                className="flex items-center justify-center gap-2 rounded-xl border border-[#173d2b] py-3 text-xs font-bold text-[#173d2b] hover:bg-[#173d2b] hover:text-white transition"
-              >
-                <Download size={15} /> Cetak / Unduh PDF
-              </button>
-              <button
-                onClick={() => alert(`Tiket berhasil dikirim ke WhatsApp ${ticket?.buyerPhone || "Pengunjung"}!`)}
-                className="flex items-center justify-center gap-2 rounded-xl bg-[#b8860b] py-3 text-xs font-bold text-white hover:bg-[#996f08] transition"
-              >
-                <Send size={15} /> Kirim ke WhatsApp
-              </button>
+              <p className="text-[11px] text-gray-500 text-center">Tunjukkan barcode di atas kepada panitia di gerbang masuk lokasi acara.</p>
             </div>
 
           </div>
+
+          {/* Tombol Aksi Download & Gmail (Hilang saat diprint) */}
+          <div className="p-8 pt-0 grid grid-cols-1 sm:grid-cols-2 gap-3 print:hidden">
+            <button
+              onClick={handleDownloadTicket}
+              className="w-full py-3.5 rounded-2xl bg-[#173d2b] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition hover:bg-[#0f291d]"
+            >
+              <Download size={16} /> Unduh / Cetak E-Tiket (PDF)
+            </button>
+
+            <button
+              disabled={emailSending || emailSent}
+              onClick={handleSendEmail}
+              className="w-full py-3.5 rounded-2xl bg-[#f5f0e6] text-[#173d2b] border border-[#e2b45e]/40 text-xs font-bold flex items-center justify-center gap-2 transition hover:bg-[#ebdcc4] disabled:opacity-50"
+            >
+              <Mail size={16} /> {emailSent ? "Terkirim ke Gmail" : emailSending ? "Mengirim..." : "Kirim ke Gmail"}
+            </button>
+          </div>
+
         </div>
+
       </div>
     </main>
   );
 }
 
-export default function TicketSuccessPage() {
+export default function EventTicketSuccessPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-[#f8f3e8] flex items-center justify-center text-[#173d2b]">
-        <p className="font-serif text-lg animate-pulse">Memuat E-Tiket Anda...</p>
-      </div>
-    }>
-      <TicketSuccessContent />
+    <Suspense fallback={<div className="min-h-screen bg-[#f8f3e8] flex items-center justify-center text-[#173d2b]">Memuat E-Tiket Event...</div>}>
+      <EventTicketContent />
     </Suspense>
   );
 }
