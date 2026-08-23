@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { slug, firstName, lastName, email, phone, idNumber } = body;
 
-    // 1. Cari event berdasarkan slug
+    // 1. Cari event berdasarkan slug secara real-time
     let event = await prisma.event.findUnique({
       where: { slug },
     });
@@ -20,9 +20,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Event tidak ditemukan." }, { status: 404 });
     }
 
-    const orderId = `MDK-${Date.now()}`;
+    const orderId = `MDK-EVT-${Date.now()}`;
     const buyerName = `${firstName} ${lastName || ""}`.trim();
-    const amount = event.price > 0 ? event.price : 50000; // Harga default 50rb jika 0
+    const amount = event.price > 0 ? event.price : 50000;
+
+    // Tentukan base URL secara dinamis (mendukung lokal maupun Vercel)
+    const host = req.headers.get("host") || "medan-karsa.vercel.app";
+    const protocol = host.includes("localhost") ? "http" : "https";
+    const baseUrl = `${protocol}://${host}`;
 
     // 2. Parameter transaksi untuk Midtrans Snap
     const parameter = {
@@ -45,14 +50,27 @@ export async function POST(req: Request) {
         },
       ],
       callbacks: {
-        finish: `http://localhost:3000/event/${slug}`,
-        unfinish: `http://localhost:3000/event/${slug}`,
-        error: `http://localhost:3000/event/${slug}`,
-        },
+        finish: `${baseUrl}/event/ticket/success?orderId=${orderId}`,
+        unfinish: `${baseUrl}/event/${slug}`,
+        error: `${baseUrl}/event/${slug}`,
+      },
     };
 
     // 3. Request Snap Token dari Midtrans
     const transaction = await snap.createTransaction(parameter);
+
+    // 4. SIMPAN TIKET KE DATABASE SEGERA (Penting agar data tiket nyata!)
+    await prisma.ticket.create({
+      data: {
+        ticketCode: orderId,
+        buyerName: buyerName,
+        buyerEmail: email,
+        buyerPhone: phone,
+        status: "PENDING", // Akan diubah menjadi SUCCESS nanti
+        paymentType: "QRIS",
+        eventId: event.id,
+      },
+    });
 
     return NextResponse.json({ 
       token: transaction.token, 
