@@ -41,8 +41,8 @@ export default async function DompetKarsaPage() {
   } catch (err) {
     console.warn("Gagal terhubung ke database, menggunakan data cadangan.");
   }
-
-  const heritageRewards = [
+  
+const heritageRewards = [
     {
       id: "rw-1",
       title: "Tiket Masuk Gratis Rumah Tjong A Fie",
@@ -56,6 +56,13 @@ export default async function DompetKarsaPage() {
       pointsRequired: 200,
       category: "Heritage",
       image: "https://images.unsplash.com/photo-1596401340653-485303c72b8d?q=80&w=600&auto=format&fit=crop",
+    },
+    {
+      id: "rw-3",
+      title: "Tiket Kunjungan Wisata Masjid Raya Al-Mashun",
+      pointsRequired: 100,
+      category: "Heritage / Religi",
+      image: "https://images.unsplash.com/photo-1564769625405-49e0d592a549?q=80&w=600&auto=format&fit=crop", // Ganti URL gambar sesuai aset Anda
     },
   ];
 

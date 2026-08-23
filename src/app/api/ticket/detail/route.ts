@@ -21,27 +21,43 @@ export async function GET(req: Request) {
       return NextResponse.json({ success: false, message: "Tiket tidak ditemukan di database" }, { status: 404 });
     }
 
-    // Jika ini adalah tiket Heritage (berdasarkan orderId atau formatnya)
-    if (orderId.includes("HERITAGE") || orderId.includes("TJONG-A-FIE") || orderId.includes("MAIMOON")) {
-      const isMaimoon = orderId.includes("MAIMOON");
+    const upperOrderId = orderId.toUpperCase();
+    const isHeritage = upperOrderId.includes("HERITAGE") || upperOrderId.includes("TJONG") || upperOrderId.includes("MAIMUN") || upperOrderId.includes("MAIMOON") || upperOrderId.includes("MASJID") || upperOrderId.includes("AL-MASHUN");
+
+    if (isHeritage) {
+      // Deteksi destinasi secara spesifik
+      const isMasjidRaya = upperOrderId.includes("MASJID") || upperOrderId.includes("MASHUN") || upperOrderId.includes("RW-3");
+      const isMaimoon = upperOrderId.includes("MAIMUN") || upperOrderId.includes("MAIMOON") || upperOrderId.includes("RW-2");
       
-      // Berikan data objek event buatan khusus untuk heritage agar tidak nyasar ke Fun Run
+      let heritageTitle = "Tiket Masuk Rumah Tjong A Fie";
+      let heritageLocation = "Jl. Jend. Ahmad Yani No.134, Kesawan, Kec. Medan Bar., Kota Medan";
+      let heritageDesc = "Mansion bersejarah bergaya Tionghoa-Art Deco milik saudagar kaya Tjong A Fie di Medan.";
+
+      if (isMasjidRaya) {
+        heritageTitle = "Tiket Kunjungan Wisata Masjid Raya Al-Mashun";
+        heritageLocation = "Jl. Sisingamangaraja, Masjid, Kec. Medan Kota, Kota Medan";
+        heritageDesc = "Masjid Raya Medan yang dibangun pada tahun 1906 dengan arsitektur megah bergaya Maroko, Eropa, dan Melayu.";
+      } else if (isMaimoon) {
+        heritageTitle = "Tiket Masuk Istana Maimoon";
+        heritageLocation = "Jl. Brigjend Katamso, Sukaraja, Kec. Medan Maimun, Kota Medan";
+        heritageDesc = "Istana Kesultanan Deli yang megah dengan arsitektur perpaduan Melayu, Timur Tengah, dan Eropa.";
+      }
+
       const heritageEventOverride = {
-        title: isMaimoon ? "Tiket Masuk Istana Maimoon" : "Tiket Masuk Rumah Tjong A Fie",
-        location: isMaimoon 
-          ? "Jl. Brigjend Katamso, Sukaraja, Kec. Medan Maimun, Kota Medan" 
-          : "Jl. Jend. Ahmad Yani No.134, Kesawan, Kec. Medan Bar., Kota Medan",
-        description: isMaimoon 
-          ? "Istana Kesultanan Deli yang megah dengan arsitektur perpaduan Melayu, Timur Tengah, dan Eropa." 
-          : "Mansion bersejarah bergaya Tionghoa-Art Deco milik saudagar kaya Tjong A Fie di Medan.",
+        title: heritageTitle,
+        location: heritageLocation,
+        description: heritageDesc,
         startAt: new Date().toISOString(),
       };
+
+      const isPoints = ticket.paymentType === "KARSA_POINTS" || upperOrderId.startsWith("REDEEM");
+      const paymentLabel = isPoints ? "⭐ Penukaran Karsa Poin" : (ticket.paymentType || "QRIS / Payment Gateway");
 
       return NextResponse.json({
         success: true,
         ticket: {
           ...ticket,
-          paymentType: ticket.paymentType || "QRIS / Payment Gateway",
+          paymentType: paymentLabel,
           event: heritageEventOverride,
         },
       });
