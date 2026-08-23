@@ -1,17 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import Footer from "@/components/layout/Footer";
 import { Utensils, Store, MapPin, ExternalLink, Star } from "lucide-react";
-import dynamic from "next/dynamic";
-
-// Dynamic import untuk Leaflet Map agar tidak error saat SSR (Server-Side Rendering)
-const UmkmMap = dynamic(() => import("@/components/umkm/UmkmMap"), { 
-  ssr: false,
-  loading: () => <div className="w-full h-[400px] bg-gray-100 animate-pulse rounded-3xl flex items-center justify-center text-xs text-gray-400">Memuat Peta Interaktif...</div>
-});
+import UmkmMapSection from "@/components/UmkmMapSection";
 
 export const dynamicOpt = "force-dynamic";
 
-// Data Kuliner Legendaris / Terkenal Lengkap dengan Koordinat Marker untuk Peta
 const legendaryCulinaryList = [
   {
     id: "kul-1",
@@ -55,7 +48,7 @@ const legendaryCulinaryList = [
     category: "Kuliner Legendaris",
     description: "Bihun bebek khas Medan dengan kuah kaldu herbal yang sangat gurih dan terkenal.",
     address: "Jl. Kumango No.15, Kesawan",
-    rating: "4.8",
+    rating: 4.8,
     image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?q=80&w=600&auto=format&fit=crop",
     lat: 3.5935,
     lng: 98.6765,
@@ -64,7 +57,6 @@ const legendaryCulinaryList = [
 ];
 
 export default async function UmkmPage() {
-  // Ambil data UMKM submission dari database user
   let userUmkmList: any[] = [];
   try {
     userUmkmList = await prisma.umkm.findMany({
@@ -74,7 +66,6 @@ export default async function UmkmPage() {
     console.warn("Gagal memuat data UMKM dari database.");
   }
 
-  // Gabungkan semua titik koordinat untuk ditampilkan pada peta interaktif
   const mapMarkers = [
     ...legendaryCulinaryList.map(item => ({
       id: item.id,
@@ -108,7 +99,7 @@ export default async function UmkmPage() {
               <h2 className="font-serif text-2xl font-bold text-[#173d2b]">Jelajahi Lokasi Kuliner & UMKM di Medan</h2>
             </div>
             <div className="overflow-hidden rounded-[28px] border border-[#e8dfcf] shadow-sm">
-              <UmkmMap markers={mapMarkers} />
+              <UmkmMapSection markers={mapMarkers} />
             </div>
           </div>
         </div>
