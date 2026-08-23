@@ -120,7 +120,7 @@ export default async function HeritageDetailPage({ params }: Props) {
       {/* 2. KONTEN UTAMA & SECTION BAWAH DENGAN CONTAINER LEBAR YANG RAPI */}
       <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-12 mt-10">
         
-        {/* PRATINJAU PANORAMA / CAROUSEL */}
+        {/* PRATINJAU PANORAMA / CAROUSEL (PENUH KIRI KANAN) */}
         <section className="mb-12">
           {panoramaScenes.length > 0 ? (
             <div className="rounded-[32px] bg-white p-6 sm:p-10 shadow-sm border border-gray-100">
@@ -133,12 +133,21 @@ export default async function HeritageDetailPage({ params }: Props) {
               <HeritagePanorama scenes={panoramaScenes} defaultSceneId={panoramaScenes[0].id} />
             </div>
           ) : (
-            <div className="rounded-[32px] bg-white p-6 sm:p-10 shadow-sm border border-gray-100">
-              <HeritageImageCarousel images={allImages} name={heritage.name} />
+            <div className="overflow-hidden rounded-[32px] bg-white shadow-sm border border-gray-100">
+              <div className="p-6 sm:px-10 sm:pt-8 pb-4 flex items-center justify-between">
+                <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#173d2b]">
+                  📸 Galeri Foto {heritage.name}
+                </h3>
+                <span className="text-xs text-[#697067]">Geser untuk melihat lainnya</span>
+              </div>
+              {/* Carousel memenuhi lebar tanpa padding putih di pinggir gambar */}
+              <div className="w-full">
+                <HeritageImageCarousel images={allImages} name={heritage.name} />
+              </div>
             </div>
           )}
         </section>
-
+        
         {/* GRID KONTEN & SIDEBAR */}
         <div className="grid gap-10 lg:grid-cols-[1fr_380px]">
           
