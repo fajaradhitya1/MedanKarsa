@@ -10,19 +10,22 @@ export default async function KarsaPointCard() {
     const session = await auth();
     
     if (session?.user?.email) {
+      // 1. Ambil SEMUA transaksi untuk menghitung total poin yang akurat
       const dbUser = await prisma.user.findUnique({
         where: { email: session.user.email },
         include: {
           pointTransactions: {
             orderBy: { createdAt: "desc" },
-            take: 4,
           },
         },
       });
 
       if (dbUser && dbUser.pointTransactions) {
+        // Menghitung total dari SELURUH transaksi
         currentPoints = dbUser.pointTransactions.reduce((acc, tx) => acc + tx.amount, 0);
-        pointHistory = dbUser.pointTransactions;
+        
+        // Mengambil 4 teratas saja khusus untuk ditampilkan di list riwayat dashboard
+        pointHistory = dbUser.pointTransactions.slice(0, 4);
       }
     }
   } catch (err) {
