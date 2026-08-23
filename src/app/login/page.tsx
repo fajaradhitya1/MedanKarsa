@@ -74,12 +74,14 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Ilustrasi Siluet Kota / Landmark Medan di Bagian Bawah */}
-          <div className="relative z-10 w-full mt-auto pt-10 opacity-30 pointer-events-none flex items-end justify-start">
-            <div className="w-full h-32 bg-gradient-to-t from-[#153e28] to-transparent absolute bottom-0 z-10" />
-            <svg viewBox="0 0 500 150" fill="currentColor" className="w-full text-[#b89552]">
-              <path d="M0 150V100L20 95V150H0ZM40 150V70H70V150H40ZM90 150V40H110V50H125V150H90ZM145 150V80H175V150H145ZM190 150V30C190 20 210 20 210 30V150H190ZM230 150V60H265V150H230ZM285 150V20C285 10 315 10 315 20V150H285ZM335 150V70H365V150H335ZM385 150V50H415V150H385ZM435 150V90H475V150H435Z" />
-            </svg>
+          {/* Ilustrasi Gambar Landmark Medan di Bagian Bawah */}
+          <div className="relative z-10 w-full mt-auto pt-10 pointer-events-none -mx-8 sm:-mx-12 -mb-8 sm:-mb-12">
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0d281a] via-[#0d281a]/50 to-transparent z-10" />
+            <img 
+              src="/assets/istanamaimun/cover.jpeg" 
+              alt="Landmark Istana Maimun" 
+              className="w-full h-48 sm:h-56 object-cover opacity-50 transform scale-105"
+            />
           </div>
         </div>
 
@@ -163,7 +165,7 @@ export default function LoginPage() {
               </button>
             </div>
 
-            {/* Opsi Ingat Saya & Lupa Password (Visual Sesuai Referensi) */}
+            {/* Opsi Ingat Saya & Lupa Password */}
             <div className="flex items-center justify-between text-xs text-gray-500 pt-1">
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input type="checkbox" className="rounded border-gray-300 text-[#0d281a] focus:ring-[#0d281a] w-4 h-4" />
