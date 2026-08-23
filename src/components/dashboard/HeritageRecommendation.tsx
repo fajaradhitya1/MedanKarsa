@@ -34,7 +34,7 @@ const culinaryItems = [
     name: "Bika Ambon Zulaikha",
     location: "Jl. Mojopahit No.62 A, Petisah Hulu",
     rating: "4.9",
-    image: "/assets/kuliner/bikaambon.jpeg",
+    image: "/assets/kuliner/bikaambon.jpg",
     link: "/umkm",
   },
   {
