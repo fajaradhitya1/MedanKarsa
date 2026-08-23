@@ -48,21 +48,21 @@ const heritageRewards = [
       title: "Tiket Masuk Gratis Rumah Tjong A Fie",
       pointsRequired: 150,
       category: "Heritage",
-      image: "https://images.unsplash.com/photo-1584646098378-0874588d76b1?q=80&w=600&auto=format&fit=crop",
+      image: "/assets/tjongafi/halaman.jpeg",
     },
     {
       id: "rw-2",
       title: "Tiket Masuk Istana Maimoon",
       pointsRequired: 200,
       category: "Heritage",
-      image: "https://images.unsplash.com/photo-1596401340653-485303c72b8d?q=80&w=600&auto=format&fit=crop",
+      image: "/assets/heritage/coveristana.jpeg",
     },
     {
       id: "rw-3",
       title: "Tiket Kunjungan Wisata Masjid Raya Al-Mashun",
       pointsRequired: 100,
       category: "Heritage / Religi",
-      image: "https://images.unsplash.com/photo-1564769625405-49e0d592a549?q=80&w=600&auto=format&fit=crop", // Ganti URL gambar sesuai aset Anda
+      image: "/assets/masjidraya/masjid.jpeg",
     },
   ];
 
