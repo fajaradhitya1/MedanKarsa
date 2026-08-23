@@ -44,7 +44,7 @@ export default function LoginPage() {
       {/* Container Card Utama (Split Screen) */}
       <div className="w-full max-w-5xl rounded-[36px] bg-white shadow-2xl border border-[#e2d8c5]/60 overflow-hidden grid grid-cols-1 lg:grid-cols-2">
         
-        {/* ================= SISI KIRI: PANEL HIJAU & ILUSTRASI ================= */}
+      {/* ================= SISI KIRI: PANEL HIJAU & ILUSTRASI ================= */}
         <div className="relative bg-[#0d281a] text-white p-8 sm:p-12 flex flex-col justify-between overflow-hidden">
           {/* Garis Dekorasi Kurva Abstrak di Sudut Kanan Atas */}
           <div className="absolute top-0 right-0 w-64 h-64 pointer-events-none opacity-20">
@@ -63,7 +63,7 @@ export default function LoginPage() {
           </div>
 
           {/* Teks Headline */}
-          <div className="relative z-10 my-12 space-y-4">
+          <div className="relative z-10 my-8 space-y-4">
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
               Jelajahi, bagikan, <br />
               dan <span className="text-[#dcae59] italic font-normal">berian berkarya</span> <br />
@@ -74,13 +74,13 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Ilustrasi Gambar Landmark Medan di Bagian Bawah */}
-          <div className="relative z-10 w-full mt-auto pt-10 pointer-events-none -mx-8 sm:-mx-12 -mb-8 sm:-mb-12">
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0d281a] via-[#0d281a]/50 to-transparent z-10" />
+          {/* Ilustrasi Gambar Landmark Medan di Bagian Bawah (Menempel Sempurna) */}
+          <div className="relative z-10 w-full mt-6 pointer-events-none -mx-8 sm:-mx-12 -mb-8 sm:-mb-12">
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0d281a] via-[#0d281a]/40 to-transparent z-10" />
             <img 
               src="/assets/istanamaimun/cover.jpeg" 
               alt="Landmark Istana Maimun" 
-              className="w-full h-48 sm:h-56 object-cover opacity-50 transform scale-105"
+              className="w-full h-44 sm:h-52 object-cover opacity-60"
             />
           </div>
         </div>
