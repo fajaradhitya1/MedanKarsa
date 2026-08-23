@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, MapPin, Compass, Ticket, Building2, History, Sparkles, Clock, Share2, Camera, Users, CheckCircle2 } from "lucide-react";
+import { MapPin, Compass, Ticket, Building2, History, Sparkles, Clock, Share2, Camera, Users, CheckCircle2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import HeritagePanorama, { PanoramaScene } from "@/components/heritage/HeritagePanorama";
 import HeritageImageCarousel from "@/components/heritage/HeritageImageCarousel";
@@ -12,9 +12,41 @@ type Props = {
 export default async function HeritageDetailPage({ params }: Props) {
   const { slug } = await params;
 
-  const heritage = await prisma.heritage.findUnique({
+  // Data statis pendukung untuk destinasi yang baru ditambahkan (London Sumatra & Masjid Raya)
+  // jika belum tersimpan secara permanen di database tabel Prisma.
+  const staticHeritageData: Record<string, any> = {
+    "gedung-london-sumatra": {
+      id: "4",
+      name: "Gedung London Sumatra (Lonsum)",
+      slug: "gedung-london-sumatra",
+      description: "Gedung bergaya kolonial Inggris abad ke-19 yang terkenal dengan lift kuno pertama di Medan.",
+      history: "Gedung Kantor PT London Sumatra Indonesia Tbk ini dibangun pada tahun 1906 dan menjadi pusat perdagangan penting di era kolonial.",
+      coverImage: "/assets/lonsum/cover.jpeg",
+      address: "Jl. Jend. Ahmad Yani No.2, Kesawan, Medan",
+      images: ["/assets/lonsum/detail1.jpeg", "/assets/lonsum/detail2.jpeg"],
+      category: "ARSITEKTUR",
+    },
+    "masjid-raya-al-mashun": {
+      id: "5",
+      name: "Masjid Raya Al-Mashun",
+      slug: "masjid-raya-al-mashun",
+      description: "Masjid Raya Medan yang megah dengan arsitektur perpaduan gaya Maroko, Eropa, dan Melayu.",
+      history: "Dibangun pada tahun 1906 oleh Sultan Ma'mun Al Rashid Perkasa Alam, masjid ini menjadi lambang keagungan Kesultanan Deli.",
+      coverImage: "/assets/masjidraya/masjid.jpeg",
+      address: "Jl. Sisingamangaraja No.74c, Mesjid, Medan",
+      images: ["/assets/masjidraya/interior.jpeg", "/assets/masjidraya/halaman.jpeg"],
+      category: "ARSITEKTUR",
+    },
+  };
+
+  // Cari di database Prisma terlebih dahulu, jika tidak ada cek data statis lokal
+  let heritage = await prisma.heritage.findUnique({
     where: { slug },
   });
+
+  if (!heritage && staticHeritageData[slug]) {
+    heritage = staticHeritageData[slug];
+  }
 
   if (!heritage) {
     notFound();
@@ -153,8 +185,8 @@ export default async function HeritageDetailPage({ params }: Props) {
                   <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#173d2b] shadow-sm">
                     <Building2 size={20} />
                   </div>
-                  <h4 className="font-bold text-sm">Bangunan Asli Terawat</h4>
-                  <p className="text-xs text-gray-500 leading-relaxed">Arsitektur klasik khas Tionghoa yang masih terjaga keasliannya.</p>
+                  <h4 className="font-bold text-sm">Arsitektur Terawat</h4>
+                  <p className="text-xs text-gray-500 leading-relaxed">Struktur bangunan asli era kolonial dan kesultanan yang megah.</p>
                 </div>
 
                 <div className="p-5 rounded-2xl bg-[#f8f3e8]/60 border border-gray-100 space-y-2">
@@ -162,23 +194,23 @@ export default async function HeritageDetailPage({ params }: Props) {
                     <History size={20} />
                   </div>
                   <h4 className="font-bold text-sm">Edukasi Sejarah</h4>
-                  <p className="text-xs text-gray-500 leading-relaxed">Tempat belajar langsung tentang sejarah peradaban multikultural di Medan.</p>
+                  <p className="text-xs text-gray-500 leading-relaxed">Pusat informasi peradaban dan sejarah perkembangan Kota Medan.</p>
                 </div>
 
                 <div className="p-5 rounded-2xl bg-[#f8f3e8]/60 border border-gray-100 space-y-2">
                   <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#173d2b] shadow-sm">
                     <Camera size={20} />
                   </div>
-                  <h4 className="font-bold text-sm">Spot Foto Instagramable</h4>
-                  <p className="text-xs text-gray-500 leading-relaxed">Banyak sudut menarik bernuansa vintage dan estetik untuk diabadikan.</p>
+                  <h4 className="font-bold text-sm">Spot Foto Estetik</h4>
+                  <p className="text-xs text-gray-500 leading-relaxed">Sudut pandang klasik yang sangat menarik untuk fotografi.</p>
                 </div>
 
                 <div className="p-5 rounded-2xl bg-[#f8f3e8]/60 border border-gray-100 space-y-2">
                   <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#173d2b] shadow-sm">
                     <Users size={20} />
                   </div>
-                  <h4 className="font-bold text-sm">Ramah Pengunjung</h4>
-                  <p className="text-xs text-gray-500 leading-relaxed">Cocok dikunjungi bersama keluarga, pelajar, maupun wisatawan umum.</p>
+                  <h4 className="font-bold text-sm">Wisata Keluarga</h4>
+                  <p className="text-xs text-gray-500 leading-relaxed">Destinasi edukatif yang sangat nyaman dikunjungi semua kalangan.</p>
                 </div>
               </div>
             </div>

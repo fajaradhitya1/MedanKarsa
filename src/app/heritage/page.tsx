@@ -69,7 +69,7 @@ export default function HeritagePage() {
       coverImage: "/assets/lonsum/cover.jpeg",
       address: "Jl. Jend. Ahmad Yani No.2, Kesawan, Medan",
       images: [
-        "/assets/lonsum/detail1.jpeg",
+        "/assets/heritage/londonsumatra_cover.jpeg",
         "/assets/lonsum/detail2.jpeg"
       ],
       latitude: 3.5915,
