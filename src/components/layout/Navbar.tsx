@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Home, Map, User, Calendar, Store, Wallet, LogOut, ChevronRight } from "lucide-react";
+import { Bell, Home, Map, User, Calendar, Store, Wallet, LogOut, ChevronRight, Ticket } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
 
@@ -14,11 +14,12 @@ interface NotificationItem {
   createdAt: string;
 }
 
+// Menyesuaikan ikon navigasi agar lebih spesifik dan sesuai konteks
 const userNavItems = [
   { label: "Beranda", href: "/dashboard", icon: Home },
   { label: "Heritage", href: "/heritage", icon: Map },
-  { label: "Event", href: "/event", icon: Map },
-  { label: "UMKM", href: "/umkm", icon: Map },
+  { label: "Event", href: "/event", icon: Calendar },
+  { label: "UMKM", href: "/umkm", icon: Store },
 ];
 
 const adminNavItems = [
@@ -158,10 +159,13 @@ export default function Navbar() {
                 </div>
               )}
 
-              {/* ACCOUNT DROPDOWN */}
+              {/* ACCOUNT PROFILE & DROPDOWN (Menuju ke /akun saat diklik atau di-hover) */}
               <div className="relative">
                 <div className="group relative inline-block">
-                  <button className="flex items-center gap-2 rounded-full bg-white px-3.5 py-2 shadow-sm transition hover:shadow-md cursor-pointer border border-[#e8dfcf]/60">
+                  <Link
+                    href={isAdmin ? "/admin/events" : "/akun"}
+                    className="flex items-center gap-2 rounded-full bg-white px-3.5 py-2 shadow-sm transition hover:shadow-md cursor-pointer border border-[#e8dfcf]/60"
+                  >
                     {session.user?.image ? (
                       <img
                         src={session.user.image}
@@ -177,7 +181,7 @@ export default function Navbar() {
                     <span className="hidden text-sm font-semibold text-[#173d2b] sm:block">
                       {isAdmin ? "Admin" : `Hai, ${session.user?.name?.split(" ")[0] || "User"}!`}
                     </span>
-                  </button>
+                  </Link>
 
                   <div className="absolute right-0 top-full pt-2 hidden group-hover:flex flex-col w-56 z-50">
                     <div className="rounded-2xl border border-[#e8dfcf] bg-white p-2 shadow-xl space-y-1">
