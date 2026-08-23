@@ -4,7 +4,7 @@ import { Utensils, Store, MapPin, ExternalLink, Star } from "lucide-react";
 import dynamic from "next/dynamic";
 
 // Dynamic import untuk Leaflet Map agar tidak error saat SSR (Server-Side Rendering)
-const UmkmMap = dynamic(() => import("@/components/UmkmMap"), { 
+const UmkmMap = dynamic(() => import("@/components/umkm/UmkmMap"), { 
   ssr: false,
   loading: () => <div className="w-full h-[400px] bg-gray-100 animate-pulse rounded-3xl flex items-center justify-center text-xs text-gray-400">Memuat Peta Interaktif...</div>
 });
