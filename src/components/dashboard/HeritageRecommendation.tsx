@@ -37,7 +37,7 @@ const heritageItems = [
     name: "London Sumatra",
     location: "Jl. Jend. Ahmad Yani No.2, Kesawan, Kec. Medan Bar., Kota Medan",
     rating: "4.8",
-    image: "/assets/heritage/londonsumatra.jpeg",
+    image: "/assets/heritage/londonsumatra_cover.jpeg",
     link: "/heritage",
   }
 ];
