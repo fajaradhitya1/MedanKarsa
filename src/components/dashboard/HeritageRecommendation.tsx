@@ -42,7 +42,7 @@ const heritageItems = [
   }
 ];
 
-// Data Kuliner Khas Medan Lengkap dengan Link Google Maps
+// Data Kuliner Khas Medan Lengkap dengan Link Google Maps (Semua Kuliner Ikonik Ditambahkan)
 const culinaryItems = [
   {
     name: "Bika Ambon Zulaikha",
@@ -72,6 +72,34 @@ const culinaryItems = [
     image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?q=80&w=600&auto=format&fit=crop",
     mapsUrl: "https://www.google.com/maps/search/?api=1&query=Bihun+Bebek+Asie+Jl+Kumango+Medan",
   },
+  {
+    name: "Soto Sinar Pagi",
+    location: "Jl. Sei Deli No.2D, Silalas, Medan",
+    rating: "4.8",
+    image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=600&auto=format&fit=crop",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Soto+Sinar+Pagi+Medan",
+  },
+  {
+    name: "Ucok Durian Medan",
+    location: "Jl. K.H. Wahid Hasyim No.30-32, Babura",
+    rating: "4.9",
+    image: "https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=600&auto=format&fit=crop",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Ucok+Durian+Medan",
+  },
+  {
+    name: "Mie Gomak Bu Darmi",
+    location: "Pasar Tradisional Medan",
+    rating: "4.7",
+    image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?q=80&w=600&auto=format&fit=crop",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Mie+Gomak+Medan",
+  },
+  {
+    name: "Rumah Makan Tabona",
+    location: "Jl. Mangkubumi No.17, Aur, Medan",
+    rating: "4.8",
+    image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=600&auto=format&fit=crop",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Rumah+Makan+Tabona+Medan",
+  }
 ];
 
 export default function HeritageRecommendation() {
