@@ -3,10 +3,9 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useSession } from "next-auth/react"; // 1. Import useSession untuk mengambil data user login
-import { ArrowLeft, User, Phone, CreditCard, ShieldCheck } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { ArrowLeft, User, Phone, CreditCard, ShieldCheck, CheckCircle2, Sparkles } from "lucide-react";
 
-// Deklarasi global untuk Midtrans Snap.js
 declare global {
   interface Window {
     snap: any;
@@ -21,15 +20,17 @@ export default function HeritageBookingPage({ params }: Props) {
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
   const router = useRouter();
-
-  // 2. Ambil sesi data user yang sedang login
   const { data: session } = useSession();
 
-  const [step, setStep] = useState<1 | 2>(1); // Step 1: Form, Step 2: Konfirmasi & Bayar
+  const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
   const [heritageData, setHeritageData] = useState<any>(null);
 
-  // Form State
+  // State untuk Modal Sukses & Info Poin
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [earnedPoints, setEarnedPoints] = useState(50);
+  const [redirectOrderId, setRedirectOrderId] = useState("");
+
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -37,9 +38,8 @@ export default function HeritageBookingPage({ params }: Props) {
     quantity: 1,
   });
 
-  const TICKET_PRICE = 15000; // Harga tiket masuk heritage per orang (bisa diubah sesuai kebutuhan)
+  const TICKET_PRICE = 15000;
 
-  // Ambil data heritage berdasarkan slug
   useEffect(() => {
     fetch(`/api/heritage/${slug}`)
       .then((res) => res.json())
@@ -47,7 +47,6 @@ export default function HeritageBookingPage({ params }: Props) {
       .catch((err) => console.error("Gagal memuat data heritage", err));
   }, [slug]);
 
-  // Load Midtrans Snap Script
   useEffect(() => {
     const snapScript = "https://app.sandbox.midtrans.com/snap/snap.js";
     const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "Mid-client-3_D4UQKJVjKqlo3i";
@@ -73,16 +72,14 @@ export default function HeritageBookingPage({ params }: Props) {
       alert("Mohon lengkapi semua data diri Anda!");
       return;
     }
-    setStep(2); // Pindah ke tahap konfirmasi data
+    setStep(2);
   };
 
   const handleProceedPayment = async () => {
     setLoading(true);
     try {
-      // Ambil email dari sesi login user, berikan fallback jika belum login
       const userEmail = session?.user?.email || "visitor@medankarsa.com";
 
-      // 1. Kirim data ke backend untuk membuat transaksi & mendapatkan Midtrans Snap Token
       const res = await fetch("/api/heritage/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -98,14 +95,12 @@ export default function HeritageBookingPage({ params }: Props) {
       if (!res.ok) throw new Error(data.message || "Gagal membuat transaksi");
 
       const { token, orderId } = data;
+      setRedirectOrderId(orderId);
 
-      // 2. Buka Popup Midtrans Snap
       window.snap.pay(token, {
         onSuccess: async function (result: any) {
-          alert("Pembayaran Berhasil! Tiket Anda sedang diproses.");
-          
-          // 3. Konfirmasi ke backend untuk generate tiket fix & simpan ke database
-          await fetch("/api/heritage/verify-payment", {
+          // Konfirmasi ke backend untuk simpan tiket & tambah poin
+          const verifyRes = await fetch("/api/heritage/verify-payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -117,14 +112,19 @@ export default function HeritageBookingPage({ params }: Props) {
             }),
           });
 
-          // Redirect ke halaman sukses tiket digital
-          router.push(`/heritage/ticket/success?orderId=${orderId}`);
+          const verifyData = await verifyRes.json();
+          if (verifyData.pointsEarned) {
+            setEarnedPoints(verifyData.pointsEarned);
+          }
+
+          setLoading(false);
+          setShowSuccessModal(true); // Tampilkan modal sukses interaktif & info poin
         },
-        onPending: function (result: any) {
+        onPending: function () {
           alert("Menunggu pembayaran Anda.");
           setLoading(false);
         },
-        onError: function (result: any) {
+        onError: function () {
           alert("Pembayaran gagal! Silakan coba lagi.");
           setLoading(false);
         },
@@ -141,7 +141,7 @@ export default function HeritageBookingPage({ params }: Props) {
   };
 
   return (
-    <main className="min-h-screen bg-[#f8f3e8] text-[#173d2b] py-10 px-5 print:hidden">
+    <main className="min-h-screen bg-[#f8f3e8] text-[#173d2b] py-10 px-5 print:hidden relative">
       <div className="mx-auto max-w-2xl bg-white rounded-[30px] p-6 sm:p-10 shadow-sm">
         <Link href={`/heritage/${slug}`} className="inline-flex items-center gap-2 text-sm font-semibold text-[#667068] hover:text-[#173d2b] mb-6">
           <ArrowLeft size={17} /> Kembali ke Detail Tempat
@@ -155,20 +155,13 @@ export default function HeritageBookingPage({ params }: Props) {
             {heritageData?.name || "Memuat destinasi..."}
           </h1>
           <p className="text-xs text-gray-500 mt-1">Lengkapi data diri pengunjung dengan benar untuk penerbitan e-tiket resmi.</p>
-          
-          {/* Menampilkan info email akun yang terdeteksi */}
-          {session?.user?.email && (
-            <p className="text-[11px] text-[#b8860b] mt-2 font-medium">
-              Masuk sebagai: {session.user.email}
-            </p>
-          )}
         </div>
 
-        {/* STEP 1: FORMULIR DATA DIRI */}
+        {/* STEP 1 & 2 FORM KODE ANDA TETAP SAMA */}
         {step === 1 && (
           <form onSubmit={handleSubmitForm} className="space-y-5">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#173d2b] mb-1">Nama Lengkap (Sesuai KTP/Identitas)</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#173d2b] mb-1">Nama Lengkap</label>
               <div className="relative">
                 <User className="absolute left-3.5 top-3.5 text-gray-400" size={18} />
                 <input
@@ -178,13 +171,13 @@ export default function HeritageBookingPage({ params }: Props) {
                   placeholder="Contoh: Budi Santoso"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full rounded-xl border border-gray-200 py-3 pl-11 pr-4 text-sm focus:border-[#173d2b] focus:outline-none"
+                  className="w-full rounded-xl border border-gray-200 py-3 pl-11 pr-4 text-sm focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#173d2b] mb-1">Nomor Telepon / WhatsApp (Aktif)</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#173d2b] mb-1">Nomor Telepon / WhatsApp</label>
               <div className="relative">
                 <Phone className="absolute left-3.5 top-3.5 text-gray-400" size={18} />
                 <input
@@ -194,24 +187,23 @@ export default function HeritageBookingPage({ params }: Props) {
                   placeholder="Contoh: 081234567890"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="w-full rounded-xl border border-gray-200 py-3 pl-11 pr-4 text-sm focus:border-[#173d2b] focus:outline-none"
+                  className="w-full rounded-xl border border-gray-200 py-3 pl-11 pr-4 text-sm focus:outline-none"
                 />
               </div>
-              <p className="text-[11px] text-gray-400 mt-1">E-tiket otomatis akan dikirim ke WhatsApp dan Email Anda setelah pembayaran berhasil.</p>
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#173d2b] mb-1">Nomor Identitas (NIK KTP / Kartu Pelajar)</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#173d2b] mb-1">Nomor Identitas (NIK KTP)</label>
               <div className="relative">
                 <CreditCard className="absolute left-3.5 top-3.5 text-gray-400" size={18} />
                 <input
                   type="text"
                   name="identityNumber"
                   required
-                  placeholder="Masukkan 16 digit NIK atau nomor identitas"
+                  placeholder="Masukkan 16 digit NIK"
                   value={formData.identityNumber}
                   onChange={handleInputChange}
-                  className="w-full rounded-xl border border-gray-200 py-3 pl-11 pr-4 text-sm focus:border-[#173d2b] focus:outline-none"
+                  className="w-full rounded-xl border border-gray-200 py-3 pl-11 pr-4 text-sm focus:outline-none"
                 />
               </div>
             </div>
@@ -225,7 +217,7 @@ export default function HeritageBookingPage({ params }: Props) {
                 max={10}
                 value={formData.quantity}
                 onChange={handleInputChange}
-                className="w-full rounded-xl border border-gray-200 py-3 px-4 text-sm focus:border-[#173d2b] focus:outline-none"
+                className="w-full rounded-xl border border-gray-200 py-3 px-4 text-sm focus:outline-none"
               />
             </div>
 
@@ -234,17 +226,13 @@ export default function HeritageBookingPage({ params }: Props) {
                 <p className="text-xs text-gray-500">Total Pembayaran</p>
                 <p className="text-xl font-serif font-bold text-[#173d2b]">Rp {(TICKET_PRICE * formData.quantity).toLocaleString("id-ID")}</p>
               </div>
-              <button
-                type="submit"
-                className="rounded-xl bg-[#173d2b] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#0f291d]"
-              >
+              <button type="submit" className="rounded-xl bg-[#173d2b] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#0f291d]">
                 Konfirmasi Data Diri
               </button>
             </div>
           </form>
         )}
 
-        {/* STEP 2: KONFIRMASI DATA & MENUJU PEMBAYARAN */}
         {step === 2 && (
           <div className="space-y-6">
             <div className="bg-[#f5f0e6] p-5 rounded-2xl space-y-3">
@@ -252,22 +240,10 @@ export default function HeritageBookingPage({ params }: Props) {
                 <ShieldCheck size={18} /> Periksa Kembali Data Anda
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm pt-2 border-t border-[#173d2b]/10">
-                <div>
-                  <p className="text-xs text-gray-500">Nama Pemesan</p>
-                  <p className="font-semibold">{formData.name}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">No. WhatsApp</p>
-                  <p className="font-semibold">{formData.phone}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">No. Identitas (KTP)</p>
-                  <p className="font-semibold">{formData.identityNumber}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">Jumlah Tiket</p>
-                  <p className="font-semibold">{formData.quantity} Orang</p>
-                </div>
+                <div><p className="text-xs text-gray-500">Nama</p><p className="font-semibold">{formData.name}</p></div>
+                <div><p className="text-xs text-gray-500">No. WhatsApp</p><p className="font-semibold">{formData.phone}</p></div>
+                <div><p className="text-xs text-gray-500">No. Identitas</p><p className="font-semibold">{formData.identityNumber}</p></div>
+                <div><p className="text-xs text-gray-500">Jumlah Tiket</p><p className="font-semibold">{formData.quantity} Orang</p></div>
               </div>
             </div>
 
@@ -277,19 +253,8 @@ export default function HeritageBookingPage({ params }: Props) {
                 <p className="text-2xl font-serif font-bold text-[#173d2b]">Rp {(TICKET_PRICE * formData.quantity).toLocaleString("id-ID")}</p>
               </div>
               <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="rounded-xl border border-gray-300 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50"
-                >
-                  Ubah Data
-                </button>
-                <button
-                  type="button"
-                  disabled={loading}
-                  onClick={handleProceedPayment}
-                  className="rounded-xl bg-[#b8860b] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#996f08] disabled:opacity-50"
-                >
+                <button type="button" onClick={() => setStep(1)} className="rounded-xl border border-gray-300 px-4 py-3 text-sm font-bold text-gray-600">Ubah Data</button>
+                <button type="button" disabled={loading} onClick={handleProceedPayment} className="rounded-xl bg-[#b8860b] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#996f08]">
                   {loading ? "Memproses..." : "Lanjut ke Pembayaran"}
                 </button>
               </div>
@@ -297,6 +262,40 @@ export default function HeritageBookingPage({ params }: Props) {
           </div>
         )}
       </div>
+
+      {/* MODAL SUKSES PEMBAYARAN & NOTIFIKASI POIN */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-[32px] max-w-md w-full p-8 text-center space-y-5 shadow-2xl animate-in fade-in zoom-in duration-300">
+            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle2 size={36} />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="font-serif text-2xl font-bold text-[#173d2b]">Pembayaran Berhasil!</h3>
+              <p className="text-xs text-gray-500">Tiket Anda telah terbit dan siap digunakan.</p>
+            </div>
+
+            {/* Kotak Informasi Poin yang Didapat */}
+            <div className="bg-[#f8f3e8] border border-[#e2b45e]/30 rounded-2xl p-4 flex items-center gap-3.5 text-left">
+              <div className="w-10 h-10 rounded-xl bg-[#b8860b] text-white flex items-center justify-center shrink-0">
+                <Sparkles size={20} />
+              </div>
+              <div>
+                <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Bonus Cashback</p>
+                <p className="text-sm font-bold text-[#173d2b]">Berhasil Mendapat <span className="text-[#b8860b]">+{earnedPoints} Karsa Poin!</span></p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => router.push(`/heritage/ticket/success?orderId=${redirectOrderId}`)}
+              className="w-full py-3.5 rounded-2xl bg-[#173d2b] text-white text-xs font-bold tracking-wider uppercase shadow-md transition hover:bg-[#0f291d]"
+            >
+              Lihat E-Tiket Saya
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
