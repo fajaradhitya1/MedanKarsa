@@ -3,9 +3,9 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
-import { CheckCircle2, Download, Mail, ArrowLeft, Ticket, MapPin, Calendar, Sparkles, User, CreditCard, Phone, Mail as MailIcon } from "lucide-react";
+import { CheckCircle2, Download, Mail, ArrowLeft, Building2, MapPin, Calendar, Sparkles, User, CreditCard, Phone, Mail as MailIcon } from "lucide-react";
 
-function EventTicketContent() {
+function HeritageTicketContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
 
@@ -25,7 +25,7 @@ function EventTicketContent() {
           setLoading(false);
         })
         .catch((err) => {
-          console.error("Gagal memuat tiket event", err);
+          console.error("Gagal memuat tiket heritage", err);
           setLoading(false);
         });
     } else {
@@ -49,7 +49,7 @@ function EventTicketContent() {
       if (!res.ok) throw new Error(data.message || "Gagal mengirim email");
 
       setEmailSent(true);
-      alert("E-tiket event berhasil dikirim ke Gmail Anda!");
+      alert("E-tiket cagar budaya berhasil dikirim ke Gmail Anda!");
     } catch (err: any) {
       alert(err.message || "Terjadi kesalahan saat mengirim email.");
     } finally {
@@ -60,13 +60,22 @@ function EventTicketContent() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f8f3e8] flex items-center justify-center text-[#173d2b] font-serif">
-        Memuat E-Tiket Event Anda...
+        Memuat E-Tiket Cagar Budaya Anda...
       </div>
     );
   }
 
-  const isPointRedeem = ticketData?.paymentType === "KARSA_POINTS" || orderId?.startsWith("REDEEM");
+  // Ambil detail tempat berdasarkan event dari database atau teks orderId
   const eventInfo = ticketData?.event;
+  const isMaimoon = orderId?.includes("MAIMOON") || eventInfo?.title?.toLowerCase().includes("maimoon");
+  
+  const heritageTitle = eventInfo?.title || (isMaimoon ? "Tiket Masuk Istana Maimoon" : "Tiket Masuk Rumah Tjong A Fie");
+  const heritageLocation = eventInfo?.location || (isMaimoon 
+    ? "Jl. Brigjend Katamso, Sukaraja, Kec. Medan Maimun, Kota Medan" 
+    : "Jl. Jend. Ahmad Yani No.134, Kesawan, Kec. Medan Bar., Kota Medan");
+  const heritageDesc = eventInfo?.description || (isMaimoon 
+    ? "Istana Kesultanan Deli yang megah dengan arsitektur perpaduan Melayu, Timur Tengah, dan Eropa." 
+    : "Mansion bersejarah bergaya Tionghoa-Art Deco milik saudagar kaya Tjong A Fie di Medan.");
 
   return (
     <main className="min-h-screen bg-[#f8f3e8] text-[#173d2b] py-10 px-5">
@@ -78,61 +87,49 @@ function EventTicketContent() {
             <ArrowLeft size={16} /> Kembali ke Dompet Karsa
           </Link>
           <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-            {isPointRedeem ? "⭐ Ditukar dengan Karsa Poin" : "✅ Pembayaran Lunas"}
+            ⭐ Ditukar dengan Karsa Poin
           </span>
         </div>
 
-        {/* KARTU E-TIKET UTAMA */}
+        {/* KARTU E-TIKET HERITAGE */}
         <div className="bg-white rounded-[32px] overflow-hidden shadow-xl border border-gray-100 print:shadow-none print:border-none">
           
           {/* Header Banner */}
           <div className="bg-linear-to-br from-[#173d2b] to-[#0f291d] text-white p-8 text-center space-y-2 relative overflow-hidden">
             <div className="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
-              <Ticket size={200} />
+              <Building2 size={200} />
             </div>
             <span className="text-[#f1c76e] text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-1.5">
-              {isPointRedeem && <Sparkles size={14} />} E-Tiket Resmi Event MedanKarsa
+              <Sparkles size={14} /> E-Tiket Resmi Cagar Budaya MedanKarsa
             </span>
             <h1 className="font-serif text-2xl sm:text-4xl font-bold">
-              {eventInfo?.title || "Tiket Masuk Event Budaya"}
+              {heritageTitle}
             </h1>
             <p className="text-xs text-gray-300 font-mono pt-1">ID TICKET: {ticketData?.ticketCode || orderId}</p>
           </div>
 
           {/* DETAIL KONTEN LENGKAP */}
-          <div className="p-8 space-y-8">
+          <div className="p-8 space-y-8 text-left">
             
-            {/* Bagian 1: Informasi Acara / Event */}
+            {/* Informasi Destinasi */}
             <div className="space-y-4">
-              <h3 className="font-serif text-lg font-bold text-[#173d2b] border-b pb-2">Informasi Acara</h3>
+              <h3 className="font-serif text-lg font-bold text-[#173d2b] border-b pb-2">Informasi Destinasi</h3>
               <div className="bg-[#fcf9f2] p-5 rounded-2xl border border-[#e2d8c5]/40 space-y-3 text-xs sm:text-sm">
                 <div className="flex items-start gap-3">
                   <MapPin size={18} className="text-[#b8860b] shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-gray-400 font-semibold uppercase text-[10px]">Lokasi / Alamat Acara</p>
-                    <p className="font-bold text-[#173d2b] mt-0.5">{eventInfo?.location || "Kota Medan, Sumatera Utara"}</p>
+                    <p className="text-gray-400 font-semibold uppercase text-[10px]">Lokasi / Alamat Cagar Budaya</p>
+                    <p className="font-bold text-[#173d2b] mt-0.5">{heritageLocation}</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <Calendar size={18} className="text-[#b8860b] shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-gray-400 font-semibold uppercase text-[10px]">Waktu Pelaksanaan</p>
-                    <p className="font-bold text-[#173d2b] mt-0.5">
-                      {eventInfo?.startAt ? new Date(eventInfo.startAt).toLocaleString("id-ID", { dateStyle: "full", timeStyle: "short" }) : "Sesuai Jadwal Resmi"}
-                    </p>
-                  </div>
-                </div>
-
-                {eventInfo?.description && (
-                  <p className="text-xs text-gray-600 pt-2 border-t border-gray-200/60 leading-relaxed">
-                    {eventInfo.description}
-                  </p>
-                )}
+                <p className="text-xs text-gray-600 pt-2 border-t border-gray-200/60 leading-relaxed">
+                  {heritageDesc}
+                </p>
               </div>
             </div>
 
-            {/* Bagian 2: Data Diri Pemegang Tiket */}
+            {/* Data Pemegang Tiket (Real-time dari Database) */}
             <div className="space-y-4">
               <h3 className="font-serif text-lg font-bold text-[#173d2b] border-b pb-2">Data Pemegang Tiket</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm bg-gray-50 p-5 rounded-2xl border border-gray-100">
@@ -164,20 +161,18 @@ function EventTicketContent() {
                   <CreditCard size={16} className="text-[#b8860b]" />
                   <div>
                     <p className="text-[10px] text-gray-400 uppercase font-semibold">Metode Transaksi</p>
-                    <p className="font-bold text-[#b8860b] uppercase">
-                      {isPointRedeem ? "⭐ Penukaran Karsa Poin" : ticketData?.paymentType || "QRIS / Transfer"}
-                    </p>
+                    <p className="font-bold text-[#b8860b] uppercase">⭐ Penukaran Karsa Poin</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Bagian 3: Barcode / QR Scan */}
+            {/* Barcode / QR */}
             <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-2xl bg-[#faf7f2] space-y-2">
               <div className="font-mono text-2xl font-bold tracking-widest text-[#173d2b]">
                 ||| | |||| || ||| || |||| |||
               </div>
-              <p className="text-[11px] text-gray-500 text-center">Tunjukkan barcode di atas kepada panitia di gerbang masuk lokasi acara.</p>
+              <p className="text-[11px] text-gray-500 text-center">Tunjukkan barcode di atas kepada petugas loket di pintu masuk cagar budaya.</p>
             </div>
 
           </div>
@@ -207,10 +202,10 @@ function EventTicketContent() {
   );
 }
 
-export default function EventTicketSuccessPage() {
+export default function HeritageTicketSuccessPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#f8f3e8] flex items-center justify-center text-[#173d2b]">Memuat E-Tiket Event...</div>}>
-      <EventTicketContent />
+    <Suspense fallback={<div className="min-h-screen bg-[#f8f3e8] flex items-center justify-center text-[#173d2b]">Memuat E-Tiket Cagar Budaya...</div>}>
+      <HeritageTicketContent />
     </Suspense>
   );
 }
