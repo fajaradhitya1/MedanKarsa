@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronRight, Heart, MapPin, Landmark, Utensils } from "lucide-react";
+import { ChevronRight, Heart, MapPin, Landmark, Utensils, ExternalLink } from "lucide-react";
 
 // Data Destinasi Heritage
 const heritageItems = [
@@ -42,35 +42,35 @@ const heritageItems = [
   }
 ];
 
-// Data Kuliner Khas Medan
+// Data Kuliner Khas Medan Lengkap dengan Link Google Maps
 const culinaryItems = [
   {
     name: "Bika Ambon Zulaikha",
     location: "Jl. Mojopahit No.62 A, Petisah Hulu",
     rating: "4.9",
     image: "/assets/kuliner/bikaambon.jpg",
-    link: "/umkm",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Bika+Ambon+Zulaikha+Jl+Mojopahit+Medan",
   },
   {
     name: "Soto Kesawan",
     location: "Jl. Jend. Ahmad Yani (Kawasan Kesawan)",
     rating: "4.8",
     image: "/assets/kuliner/soto.jpeg",
-    link: "/umkm",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Soto+Kesawan+Medan",
   },
   {
     name: "Merdeka Walk Culinary",
     location: "Jl. Balai Kota (Pusat Kota Medan)",
     rating: "4.7",
     image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=600&auto=format&fit=crop",
-    link: "/umkm",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Merdeka+Walk+Medan",
   },
   {
     name: "Bihun Bebek Asie",
     location: "Jl. Kumango No.15, Kesawan",
     rating: "4.8",
     image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?q=80&w=600&auto=format&fit=crop",
-    link: "/umkm",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Bihun+Bebek+Asie+Jl+Kumango+Medan",
   },
 ];
 
@@ -109,7 +109,7 @@ export default function HeritageRecommendation() {
             href="/umkm"
             className="inline-flex items-center gap-2 rounded-2xl bg-[#dcae59] px-5 py-3 text-xs font-bold text-[#173d2b] shadow-xs transition hover:bg-[#cca04b]"
           >
-            <Utensils size={15} /> Jelajahi Kuliner
+            <Utensils size={15} /> Jelajahi UMKM User
           </a>
         </div>
       </div>
@@ -143,7 +143,7 @@ export default function HeritageRecommendation() {
 
                     <button
                       onClick={() => toggleLike(item.name)}
-                      className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 backdrop-blur-md shadow-xs transition hover:scale-110"
+                      className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 backdrop-blur-md shadow-xs transition hover:scale-110 cursor-pointer"
                     >
                       <Heart
                         size={17}
@@ -181,7 +181,7 @@ export default function HeritageRecommendation() {
         </div>
       </div>
 
-      {/* ================= BARIS 2: KULINER (BISA DI-SCROLL KIRI KANAN) ================= */}
+      {/* ================= BARIS 2: KULINER (DENGAN TOMBOL GOOGLE MAPS) ================= */}
       <div className="space-y-4 text-left pt-4">
         <div className="flex items-center justify-between">
           <h3 className="font-serif text-xl font-bold text-[#173d2b] flex items-center gap-2">
@@ -210,7 +210,7 @@ export default function HeritageRecommendation() {
 
                     <button
                       onClick={() => toggleLike(item.name)}
-                      className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 backdrop-blur-md shadow-xs transition hover:scale-110"
+                      className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 backdrop-blur-md shadow-xs transition hover:scale-110 cursor-pointer"
                     >
                       <Heart
                         size={17}
@@ -236,10 +236,12 @@ export default function HeritageRecommendation() {
 
                 <div className="px-5 pb-5 pt-0">
                   <a
-                    href={item.link}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#21633f] transition hover:gap-2.5"
+                    href={item.mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-[#f8f3e8] border border-[#dcae59]/40 py-2.5 text-xs font-bold text-[#173d2b] transition hover:bg-[#173d2b] hover:text-white"
                   >
-                    Cicipi Kuliner <ChevronRight size={15} />
+                    <MapPin size={14} className="text-[#b8860b]" /> Buka di Google Maps <ExternalLink size={12} />
                   </a>
                 </div>
               </article>
